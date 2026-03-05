@@ -1,0 +1,60 @@
+name: Daily Data Collection - {{KEYWORD}}
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 매일 오전 9시 (UTC)
+  workflow_dispatch:  # 수동 실행 가능
+
+env:
+  KEYWORD: "{{KEYWORD}}"
+
+jobs:
+  collect-and-analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run data collection pipeline
+        env:
+          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python collect_and_report.py
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trend-report-${{ github.run_number }}
+          path: output/*.md
+          retention-days: 30
+
+      - name: Commit report to repository
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add output/
+          git diff --cached --quiet || git commit -m "chore: add daily trend report $(date +%Y-%m-%d)"
+          git push
+
+      - name: Send Slack notification (optional)
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            -d "{\"text\": \"$KEYWORD 트렌드 보고서가 생성되었습니다. Run #${{ github.run_number }}\"}"

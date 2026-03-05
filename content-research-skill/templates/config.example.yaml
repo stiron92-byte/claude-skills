@@ -1,0 +1,43 @@
+# ============================================
+# 콘텐츠 리서치 자동화 설정 파일
+# 이 파일을 config.yaml로 복사한 후 수정하세요
+# cp templates/config.example.yaml config.yaml
+# ============================================
+
+# --- RSS 피드 목록 ---
+# 관심 분야의 RSS 피드 URL을 추가하세요
+rss_feeds:
+  # 테크/AI 예시
+  # - "https://techcrunch.com/feed/"
+  # - "https://www.theverge.com/rss/index.xml"
+  # - "https://hnrss.org/frontpage"
+
+  # 요리 예시
+  # - "https://www.seriouseats.com/feed"
+  # - "https://www.bonappetit.com/feed/rss"
+
+  # 한국 IT 예시
+  # - "https://news.hada.io/rss"
+  # - "https://yozm.wishket.com/magazine/feed/"
+
+  # 여기에 RSS 피드 URL을 추가하세요
+  - "https://hnrss.org/frontpage"
+
+# --- 수집 설정 ---
+max_entries_per_feed: 10    # 피드당 최대 수집 기사 수
+filter_days: 3              # 최근 N일 이내 기사만 필터링 (0=전체)
+
+# --- 콘텐츠 분석 설정 ---
+# 콘텐츠 유형: youtube / blog / newsletter / general
+content_type: "general"
+
+# Claude 모델 설정
+model: "claude-sonnet-4-20250514"
+max_tokens: 4096
+
+# 출력 언어: ko (한국어) / en (영어)
+language: "ko"
+
+# 커스텀 분석 프롬프트 (비워두면 content_type에 따른 기본 프롬프트 사용)
+# analysis_prompt: "이 뉴스에서 유튜브 영상 주제 5개를 뽑아줘"
+analysis_prompt: ""

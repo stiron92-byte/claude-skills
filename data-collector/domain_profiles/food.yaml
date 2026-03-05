@@ -1,0 +1,107 @@
+domain: food
+display_name: "요리/식품"
+
+keywords:
+  - "요리"
+  - "레시피"
+  - "식품"
+  - "음식"
+  - "식재료"
+  - "맛집"
+  - "건강식"
+  - "비건"
+  - "저당"
+  - "제로슈거"
+  - "식단"
+  - "cooking"
+  - "recipe"
+  - "food"
+
+sources:
+  free:
+    - type: rss
+      name: "Serious Eats"
+      url: "https://www.seriouseats.com/feeds/serious-eats"
+      priority: 1
+    - type: rss
+      name: "Bon Appetit"
+      url: "https://www.bonappetit.com/feed/rss"
+      priority: 2
+    - type: rss
+      name: "Maangchi (한식)"
+      url: "https://www.maangchi.com/feed"
+      priority: 2
+    - type: web_search
+      name: "식품 트렌드 검색"
+      query_template: "{keyword} 식품 트렌드 2025"
+      priority: 1
+    - type: web_search
+      name: "레시피 트렌드"
+      query_template: "{keyword} 인기 레시피 요리법"
+      priority: 1
+    - type: web_search
+      name: "식재료 가격 동향"
+      query_template: "{keyword} 식재료 가격 시세"
+      priority: 2
+    - type: web_search
+      name: "건강 식품 트렌드"
+      query_template: "{keyword} 건강 웰빙 식품"
+      priority: 2
+
+  paid:
+    - type: api
+      name: "NewsAPI 식품"
+      requires_key: newsapi
+      query_template: "{keyword} AND (food OR recipe OR cooking OR restaurant)"
+    - type: api
+      name: "YouTube 쿠킹"
+      requires_key: youtube_data
+      query_template: "{keyword} 요리 레시피 먹방"
+
+keyword_expansion:
+  rules:
+    - type: ingredient_related
+      description: "식재료/요리법 → 관련 재료·조리법 확장"
+      examples:
+        저당: ["제로슈거", "알룰로스", "스테비아", "당류저감", "무설탕"]
+        비건: ["식물성", "대체육", "두부", "템페", "오트밀크"]
+        발효: ["김치", "콤부차", "요거트", "미소", "프로바이오틱스"]
+        에어프라이어: ["오븐요리", "그릴", "저유", "간편조리"]
+    - type: health_trend
+      description: "건강 트렌드 연결"
+      examples:
+        장건강: ["프로바이오틱스", "프리바이오틱스", "식이섬유", "발효식품"]
+        다이어트: ["저탄수화물", "키토", "간헐적단식", "칼로리"]
+    - type: seasonal
+      description: "제철 식재료 + 시즌 키워드"
+      mapping:
+        spring: ["봄나물", "냉이", "달래", "쑥", "딸기"]
+        summer: ["냉면", "수박", "콩국수", "냉국", "팥빙수"]
+        autumn: ["버섯", "고구마", "밤", "감", "새우"]
+        winter: ["김장", "국물요리", "탕", "전골", "귤"]
+
+analysis:
+  framework:
+    - name: "식재료 트렌드"
+      method: "keyword_frequency"
+      description: "식재료명 언급 빈도 변화, 새로운 재료 발견"
+    - name: "건강/웰빙 연결"
+      method: "health_correlation"
+      description: "영양 트렌드와 식재료 인기도 연결 분석"
+    - name: "외식 vs 집밥"
+      method: "dining_comparison"
+      description: "레스토랑 트렌드 vs 홈쿠킹 트렌드 비교"
+    - name: "글로벌 영향"
+      method: "cross_cultural"
+      description: "해외에서 유입되는 음식 트렌드 (예: 두바이 초콜릿, 탕후루)"
+    - name: "가격 동향"
+      method: "price_tracking"
+      description: "주요 식재료 가격 변동 추이"
+
+report:
+  highlight_sections:
+    - "지금 뜨는 식재료·요리법 TOP 5"
+    - "제철 식재료 활용 가이드"
+    - "건강 트렌드와 식품 연결"
+    - "글로벌 → 한국 유입 트렌드"
+  tone: "친근하고 실용적, 바로 활용 가능한 정보 중심"

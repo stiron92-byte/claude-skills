@@ -1,0 +1,103 @@
+domain: realestate
+display_name: "부동산"
+
+keywords:
+  - "부동산"
+  - "아파트"
+  - "전세"
+  - "월세"
+  - "매매"
+  - "분양"
+  - "청약"
+  - "재건축"
+  - "재개발"
+  - "실거래가"
+  - "집값"
+  - "주택"
+  - "오피스텔"
+
+sources:
+  free:
+    - type: rss
+      name: "머니투데이 부동산"
+      url: "https://news.mt.co.kr/newsList.html?type=rss&pDepth=news&pDepth2=real"
+      priority: 1
+    - type: web_search
+      name: "부동산 시장 동향"
+      query_template: "{keyword} 부동산 시세 동향 2025"
+      priority: 1
+    - type: web_search
+      name: "부동산 정책"
+      query_template: "{keyword} 부동산 정책 규제 대출"
+      priority: 1
+    - type: web_search
+      name: "실거래가 검색"
+      query_template: "{keyword} 아파트 실거래가 매매"
+      priority: 2
+    - type: web_search
+      name: "청약/분양 정보"
+      query_template: "{keyword} 분양 청약 일정"
+      priority: 2
+    - type: web_search
+      name: "한국은행 금리"
+      query_template: "한국은행 기준금리 주담대 금리"
+      priority: 2
+
+  paid:
+    - type: api
+      name: "공공데이터포털 실거래가"
+      requires_key: data_go_kr
+      query_template: "아파트 실거래가 조회"
+    - type: api
+      name: "NewsAPI 부동산"
+      requires_key: newsapi
+      query_template: "{keyword} AND (부동산 OR apartment OR real estate OR housing)"
+
+keyword_expansion:
+  rules:
+    - type: region_adjacent
+      description: "지역명 → 인접 지역 + 행정구역 확장"
+      examples:
+        강남: ["서초", "송파", "강남3구", "강남역", "압구정", "대치"]
+        마포: ["용산", "서대문", "마포구", "합정", "상수", "연남"]
+        판교: ["분당", "성남", "위례", "수지", "동탄"]
+        제주: ["서귀포", "제주시", "제주도", "제주 이주"]
+    - type: policy_keywords
+      description: "부동산 정책 관련 키워드 자동 포함"
+      examples:
+        대출: ["DSR", "LTV", "DTI", "특례보금자리론", "디딤돌대출"]
+        세금: ["종부세", "양도세", "취득세", "보유세"]
+        규제: ["투기과열지구", "조정대상지역", "분양가상한제"]
+    - type: seasonal
+      description: "부동산 시즌 키워드"
+      mapping:
+        spring: ["봄 이사 시즌", "3월 분양", "입학 수요"]
+        summer: ["여름 비수기", "하반기 분양"]
+        autumn: ["가을 이사 시즌", "9월 분양", "추석 전후"]
+        winter: ["연말 실거래", "내년 입주물량", "내년 부동산 전망"]
+
+analysis:
+  framework:
+    - name: "가격 추이"
+      method: "price_trend"
+      description: "매매/전세 가격 변화율, 매매-전세 갭 분석"
+    - name: "거래량 분석"
+      method: "volume_analysis"
+      description: "전월 대비, 전년 동기 대비 거래량 변화"
+    - name: "정책 영향"
+      method: "policy_impact"
+      description: "최근 규제/완화 정책과 시장 반응 분석"
+    - name: "수급 분석"
+      method: "supply_demand"
+      description: "입주물량, 인허가, 미분양 추이"
+    - name: "금리 연결"
+      method: "interest_rate_correlation"
+      description: "기준금리/주담대 금리 변화와 시장 영향"
+
+report:
+  highlight_sections:
+    - "지역별 가격 변동 요약표"
+    - "주요 정책 변화 타임라인"
+    - "수급 현황 (입주물량, 미분양)"
+    - "금리 환경과 시장 영향"
+  tone: "객관적 데이터 중심, 매수/매도 추천 절대 불가, '시장 신호' 중심 서술"

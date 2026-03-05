@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+
+# Archives
+*.zip
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Claude
+.claude/
+
+# Node
+node_modules/

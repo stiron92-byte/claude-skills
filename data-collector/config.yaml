@@ -1,0 +1,24 @@
+# data-collector 스킬 설정 파일
+# 비어있는 값은 해당 기능을 사용하지 않음을 의미합니다.
+
+# ── 보고서 설정 ──
+output_dir: ""                    # 추가 저장 경로 (비워두면 기본 경로만 사용)
+report_language: "ko"             # ko / en
+report_depth: "deep"              # deep (심층분석) / brief (간단요약)
+
+# ── API 키 (선택사항) ──
+# 키가 없는 소스는 자동으로 제외되고, 무료 소스만으로 동작합니다.
+api_keys:
+  newsapi: ""                     # https://newsapi.org 에서 발급
+  data_go_kr: ""                  # https://www.data.go.kr 에서 발급
+  fred: ""                        # https://fred.stlouisfed.org/docs/api/api_key.html
+  youtube_data: ""                # Google Cloud Console에서 YouTube Data API v3 키 발급
+  steam: ""                       # https://steamcommunity.com/dev/apikey
+
+# ── MCP 연동 (선택사항, 모드2 자동화용) ──
+integrations:
+  slack_webhook: ""               # Slack Incoming Webhook URL
+
+# ── 기본 분야 설정 (선택사항) ──
+# 설정하면 매번 분야를 묻지 않고 해당 분야로 바로 실행
+default_domain: ""                # finance / beauty / tech / food / realestate / game

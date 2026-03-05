@@ -1,0 +1,109 @@
+domain: game
+display_name: "게임"
+
+keywords:
+  - "게임"
+  - "인디게임"
+  - "스팀"
+  - "Steam"
+  - "닌텐도"
+  - "플스"
+  - "Xbox"
+  - "신작"
+  - "할인"
+  - "소울라이크"
+  - "RPG"
+  - "게임 추천"
+  - "game"
+  - "gaming"
+  - "e스포츠"
+
+sources:
+  free:
+    - type: rss
+      name: "IGN RSS"
+      url: "https://feeds.feedburner.com/ign/all"
+      priority: 1
+    - type: rss
+      name: "Kotaku"
+      url: "https://kotaku.com/rss"
+      priority: 2
+    - type: web_search
+      name: "게임 트렌드 검색"
+      query_template: "{keyword} 게임 트렌드 신작 2025"
+      priority: 1
+    - type: web_search
+      name: "스팀 인기"
+      query_template: "Steam 인기 게임 {keyword} 동시접속"
+      priority: 1
+    - type: web_search
+      name: "게임 커뮤니티 반응"
+      query_template: "{keyword} 게임 리뷰 평가 커뮤니티"
+      priority: 2
+    - type: web_search
+      name: "게임 할인"
+      query_template: "{keyword} 게임 할인 세일 최저가"
+      priority: 2
+
+  paid:
+    - type: api
+      name: "Steam Web API"
+      requires_key: steam
+      query_template: "게임 정보, 동시접속자, 리뷰"
+    - type: api
+      name: "NewsAPI 게임"
+      requires_key: newsapi
+      query_template: "{keyword} AND (game OR gaming OR esports OR indie)"
+    - type: api
+      name: "YouTube 게임"
+      requires_key: youtube_data
+      query_template: "{keyword} 게임 리뷰 실황 공략"
+
+keyword_expansion:
+  rules:
+    - type: genre_titles
+      description: "장르명 → 대표 타이틀 + 관련 장르 확장"
+      examples:
+        소울라이크: ["엘든링", "다크소울", "블랙미스", "Lies of P", "하데스"]
+        메타버스: ["로블록스", "제페토", "VRChat", "포트나이트"]
+        인디게임: ["스팀 인디", "인디 추천", "독립 개발", "게임잼"]
+        FPS: ["발로란트", "오버워치", "카운터스트라이크", "에이펙스"]
+    - type: platform_keywords
+      description: "플랫폼 관련 키워드"
+      examples:
+        PC: ["Steam", "Epic", "GOG"]
+        콘솔: ["PS5", "Xbox Series", "닌텐도 스위치2"]
+        모바일: ["iOS", "Android", "모바일게임"]
+    - type: seasonal
+      description: "게임 이벤트 시즌"
+      mapping:
+        spring: ["봄 세일", "GDC"]
+        summer: ["Steam 여름 세일", "Summer Game Fest"]
+        autumn: ["도쿄게임쇼", "가을 신작"]
+        winter: ["Steam 겨울 세일", "The Game Awards", "연말 GOTY"]
+
+analysis:
+  framework:
+    - name: "인기도 추이"
+      method: "popularity_tracking"
+      description: "동시접속자 추이, 스팀 리뷰 비율 변화"
+    - name: "신작 동향"
+      method: "new_release_tracking"
+      description: "출시 예정작, 얼리억세스 반응, 기대작"
+    - name: "커뮤니티 반응"
+      method: "community_sentiment"
+      description: "긍정/부정 여론, 화제 이슈, 논란"
+    - name: "할인/가격"
+      method: "price_tracking"
+      description: "역대 최저가, 현재 할인, 번들 정보"
+    - name: "장르 트렌드"
+      method: "genre_analysis"
+      description: "뜨는 장르, 식는 장르, 하이브리드 장르"
+
+report:
+  highlight_sections:
+    - "이번 주/달 주목할 게임 TOP 5"
+    - "할인 정보 요약"
+    - "출시 예정작 캘린더"
+    - "장르 트렌드 변화"
+  tone: "게이머 친화적, 재미있되 정보 밀도 높게"

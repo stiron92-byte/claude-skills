@@ -1,0 +1,114 @@
+domain: tech
+display_name: "테크/IT"
+
+keywords:
+  - "IT"
+  - "테크"
+  - "AI"
+  - "인공지능"
+  - "스타트업"
+  - "개발"
+  - "프로그래밍"
+  - "SaaS"
+  - "클라우드"
+  - "MCP"
+  - "LLM"
+  - "Agent"
+  - "tech"
+  - "startup"
+  - "developer"
+
+sources:
+  free:
+    - type: rss
+      name: "Hacker News (GeekNews 한국어)"
+      url: "https://news.hada.io/rss"
+      priority: 1
+    - type: rss
+      name: "요즘IT"
+      url: "https://yozm.wishket.com/magazine/feed/"
+      priority: 1
+    - type: rss
+      name: "TechCrunch"
+      url: "https://techcrunch.com/feed/"
+      priority: 2
+    - type: rss
+      name: "The Verge"
+      url: "https://www.theverge.com/rss/index.xml"
+      priority: 2
+    - type: rss
+      name: "Product Hunt Daily"
+      url: "https://www.producthunt.com/feed"
+      priority: 2
+    - type: rss
+      name: "arXiv AI/ML"
+      url: "https://rss.arxiv.org/rss/cs.AI"
+      priority: 3
+    - type: web_search
+      name: "기술 트렌드 검색"
+      query_template: "{keyword} trend 2025"
+      priority: 1
+    - type: web_search
+      name: "GitHub 트렌딩"
+      query_template: "github trending {keyword}"
+      priority: 2
+
+  paid:
+    - type: api
+      name: "NewsAPI 테크"
+      requires_key: newsapi
+      query_template: "{keyword} AND (technology OR startup OR AI OR software)"
+    - type: api
+      name: "YouTube 테크 리뷰"
+      requires_key: youtube_data
+      query_template: "{keyword} 기술 리뷰 개발"
+
+keyword_expansion:
+  rules:
+    - type: tech_ecosystem
+      description: "기술명 → 관련 프레임워크/회사/경쟁 기술 확장"
+      examples:
+        AI Agent: ["LangChain", "CrewAI", "AutoGen", "Claude Code", "MCP", "Tool Use"]
+        MCP: ["Model Context Protocol", "Anthropic MCP", "MCP 서버", "Function Calling"]
+        LLM: ["GPT", "Claude", "Gemini", "Llama", "RAG", "Fine-tuning"]
+        React: ["Next.js", "Remix", "Vite", "Vue", "Svelte"]
+        클라우드: ["AWS", "GCP", "Azure", "Kubernetes", "서버리스"]
+    - type: layer_classification
+      description: "기술 레이어 분류 키워드 (인프라/플랫폼/앱)"
+      examples:
+        인프라: ["GPU", "CUDA", "TPU", "데이터센터"]
+        플랫폼: ["API", "SDK", "PaaS", "MLOps"]
+        앱: ["SaaS", "프로덕트", "UX", "프론트엔드"]
+    - type: seasonal
+      description: "테크 이벤트 시즌"
+      mapping:
+        spring: ["Google I/O", "WWDC 준비"]
+        summer: ["WWDC", "중간 실적"]
+        autumn: ["AWS re:Invent", "GitHub Universe"]
+        winter: ["CES", "연간 회고", "내년 전망"]
+
+analysis:
+  framework:
+    - name: "기술 성숙도"
+      method: "hype_cycle"
+      description: "Hype 단계 판단: 초기 화제 → 실사용 증가 → 안정화"
+    - name: "투자 동향"
+      method: "funding_tracking"
+      description: "관련 스타트업 펀딩 라운드, 투자 규모"
+    - name: "오픈소스 활성도"
+      method: "oss_metrics"
+      description: "GitHub 스타 증가율, 기여자 수, 포크 수"
+    - name: "채택 신호"
+      method: "adoption_signal"
+      description: "대기업 도입 사례, 채용공고 언급 빈도"
+    - name: "경쟁 구도"
+      method: "competitive_landscape"
+      description: "주요 플레이어 포지셔닝, 차별화 요소"
+
+report:
+  highlight_sections:
+    - "이번 주/달 핫 프로덕트·기술 TOP 5"
+    - "기술 성숙도 판단 + 근거"
+    - "개발자가 주목할 것 (실무 관점)"
+    - "투자/채용 신호"
+  tone: "기술적이되 실무 중심, 과도한 전문용어 회피"
