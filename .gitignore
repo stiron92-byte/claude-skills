@@ -4,6 +4,11 @@
 # Archives
 *.zip
 
+# Binary / Media
+*.mp4
+*.pptx
+*.png
+
 # Python
 .venv/
 __pycache__/
