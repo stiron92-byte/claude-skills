@@ -21,6 +21,7 @@ description: 다양한 형식의 파일(CSV, 엑셀, PDF, Word, PPT, HTML, Markd
 | **데이터 → PPT 변환** | "매출 데이터 분석해서 PPT로 만들어줘" |
 | **문서 → PPT 변환** | "이 PDF 내용을 PPT로 정리해줘" |
 | **HWPX → PPT 변환** | "이 한글 파일을 PPT로 만들어줘" |
+| **HWPX 내용 변경** | "이 결재문서 양식에서 제목이랑 담당자만 바꿔줘" |
 | **HWPX 템플릿 채우기** | "이 데이터를 한글 양식에 넣어줘" |
 | **문서 요약 + 이메일** | "이 보고서 요약해서 팀에 공유할 이메일 써줘" |
 | **보고용 이메일 작성** | "이 데이터로 임원 보고 이메일 써줘" |
@@ -161,6 +162,90 @@ python scripts/generate_report.py --input samples/weekly_sales.csv --output outp
 - `output/email_executive.md` — 임원용 요약 이메일
 - `output/email_team.md` — 팀원용 상세 이메일
 
+## HWPX 문서 내용 변경 (핵심 기능)
+
+기존 HWPX 문서의 양식(레이아웃, 로고, 서체, 테이블 구조)을 그대로 유지하면서
+텍스트 내용만 교체합니다.
+
+**절대 주의**: XML 파서(ElementTree 등)를 사용하면 안 됩니다.
+반드시 `hwpx_template.py`의 `replace_texts()` 함수를 사용하거나,
+직접 구현할 때도 순수 문자열 치환(str.replace)만 사용하세요.
+XML 파서는 네임스페이스를 변환하여 한컴 오피스에서 파일이 깨집니다.
+
+### 방법 1: Python 코드에서 직접 호출 (권장)
+
+```python
+from hwpx_template import replace_texts
+
+replace_texts(
+    "원본문서.hwpx",
+    [
+        ("원본 제목", "새 제목"),
+        ("원본 담당자", "새 담당자"),
+        ("원본 본문 내용", "새 본문 내용"),
+    ],
+    "output/결과문서.hwpx",
+)
+```
+
+### 방법 2: CLI로 실행
+
+```bash
+# 1단계: 원본 HWPX의 텍스트 확인
+python scripts/hwpx_template.py extract 원본문서.hwpx
+
+# 2단계: 치환 맵 JSON 작성
+cat > replacements.json << 'EOF'
+{
+    "원본 제목": "새 제목",
+    "원본 담당자": "새 담당자",
+    "원본 본문": "새 본문"
+}
+EOF
+
+# 3단계: 치환 실행
+python scripts/hwpx_template.py replace 원본문서.hwpx --map replacements.json --output output/결과.hwpx
+```
+
+### 방법 3: AI가 직접 Python 스크립트 작성
+
+사용자가 HWPX 파일과 변경 내용을 알려주면, 아래 패턴으로 스크립트를 작성하세요:
+
+```python
+import re, zipfile
+
+SRC = "원본.hwpx"
+DST = "output/결과.hwpx"
+
+REPLACEMENTS = [
+    ("원본텍스트1", "새텍스트1"),
+    ("원본텍스트2", "새텍스트2"),
+]
+
+with zipfile.ZipFile(SRC, "r") as zf_in:
+    with zipfile.ZipFile(DST, "w") as zf_out:
+        for name in zf_in.namelist():
+            data = zf_in.read(name)
+            info = zf_in.getinfo(name)
+            compress = zipfile.ZIP_STORED if name == "mimetype" else zipfile.ZIP_DEFLATED
+
+            if name.endswith(".xml"):
+                xml_str = data.decode("utf-8")
+                for old, new in REPLACEMENTS:
+                    xml_str = xml_str.replace(old, new)
+                # linesegarray 제거 (한컴에서 자동 재생성)
+                xml_str = re.sub(r"<hp:linesegarray>.*?</hp:linesegarray>", "", xml_str, flags=re.DOTALL)
+                data = xml_str.encode("utf-8")
+
+            zf_out.writestr(info, data, compress_type=compress)
+```
+
+**주의사항**:
+- 원본 텍스트를 정확히 일치시켜야 합니다 (공백 포함)
+- `extract_texts()` 또는 `hwpx_parser.py`로 원본 텍스트를 먼저 확인하세요
+- XML 태그(`<hp:t>`, `<hp:run>` 등)는 절대 건드리지 마세요
+- linesegarray는 반드시 제거해야 글자 겹침이 방지됩니다
+
 ## 커스텀 가이드
 
 ### 유튜버: 주간 채널 성과 보고서
@@ -184,7 +269,7 @@ doc-automation/
 │   ├── generate_report.py             # 전체 파이프라인 실행
 │   ├── analyze_data.py                # 파일 분석 (테이블+문서+HWPX 지원)
 │   ├── hwpx_parser.py                # HWPX 파일 파서 (텍스트/표/이미지 추출)
-│   ├── hwpx_template.py              # HWPX 템플릿 엔진 (플레이스홀더 치환)
+│   ├── hwpx_template.py              # HWPX 텍스트 치환 (replace_texts + fill_template)
 │   ├── create_pptx.py                 # PPT 생성 (StyleConfig 기반)
 │   ├── style_config.py               # 색상/폰트/좌표 설정 클래스
 │   ├── template_analyzer.py          # 회사 PPT 템플릿 분석
