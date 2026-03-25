@@ -6,7 +6,7 @@ matplotlib 차트를 생성합니다.
 
 지원 형식:
   - 테이블형: .csv, .xlsx, .xls, .tsv, .json
-  - 문서형:   .pdf, .docx, .doc, .pptx, .ppt, .html, .htm, .md, .txt
+  - 문서형:   .pdf, .docx, .doc, .pptx, .ppt, .html, .htm, .md, .txt, .hwpx
 """
 
 import argparse
@@ -45,7 +45,7 @@ COLORS = ["#4A90D9", "#E85D75", "#50C878", "#F5A623", "#9B59B6", "#1ABC9C"]
 # 파일 형식 분류
 # ──────────────────────────────────────────────
 TABULAR_EXTENSIONS = {".csv", ".xlsx", ".xls", ".tsv", ".json"}
-DOCUMENT_EXTENSIONS = {".pdf", ".docx", ".doc", ".pptx", ".ppt", ".html", ".htm", ".md", ".txt"}
+DOCUMENT_EXTENSIONS = {".pdf", ".docx", ".doc", ".pptx", ".ppt", ".html", ".htm", ".md", ".txt", ".hwpx"}
 
 def detect_file_type(file_path: str) -> str:
     """파일 확장자를 기반으로 'tabular' 또는 'document'를 반환합니다."""
@@ -84,7 +84,9 @@ def load_document_text(file_path: str) -> str:
     path = Path(file_path)
     ext = path.suffix.lower()
 
-    if ext == ".pdf":
+    if ext == ".hwpx":
+        return _load_hwpx(path)
+    elif ext == ".pdf":
         return _load_pdf(path)
     elif ext in (".docx", ".doc"):
         return _load_docx(path)
@@ -96,6 +98,18 @@ def load_document_text(file_path: str) -> str:
         return _load_markdown(path)
     else:  # .txt 및 기타
         return path.read_text(encoding="utf-8")
+
+
+def _load_hwpx(path: Path) -> str:
+    """HWPX에서 텍스트를 추출합니다."""
+    try:
+        from hwpx_parser import extract_text
+        return extract_text(str(path))
+    except ImportError:
+        raise ImportError(
+            "HWPX 파일을 읽으려면 hwpx_parser 모듈이 필요합니다.\n"
+            "chapter2-doc-automation/scripts/ 디렉토리에 hwpx_parser.py가 있는지 확인하세요."
+        )
 
 
 def _load_pdf(path: Path) -> str:

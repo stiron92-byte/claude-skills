@@ -20,6 +20,8 @@ description: 다양한 형식의 파일(CSV, 엑셀, PDF, Word, PPT, HTML, Markd
 | **주간/월간 보고서 요청** | "이번 주 실적 보고서 정리해줘" |
 | **데이터 → PPT 변환** | "매출 데이터 분석해서 PPT로 만들어줘" |
 | **문서 → PPT 변환** | "이 PDF 내용을 PPT로 정리해줘" |
+| **HWPX → PPT 변환** | "이 한글 파일을 PPT로 만들어줘" |
+| **HWPX 템플릿 채우기** | "이 데이터를 한글 양식에 넣어줘" |
 | **문서 요약 + 이메일** | "이 보고서 요약해서 팀에 공유할 이메일 써줘" |
 | **보고용 이메일 작성** | "이 데이터로 임원 보고 이메일 써줘" |
 | **데이터 시각화** | "매출 추이 차트 그려줘" |
@@ -38,6 +40,7 @@ description: 다양한 형식의 파일(CSV, 엑셀, PDF, Word, PPT, HTML, Markd
 | **테이블형** | `.csv`, `.xlsx`, `.xls`, `.tsv`, `.json` | 숫자 분석 → 차트 생성 → PPT |
 | **문서형** | `.pdf`, `.docx`, `.doc` | 텍스트 추출 → 핵심 요약 → PPT |
 | **프레젠테이션** | `.pptx`, `.ppt` | 내용 추출 → 재구성/요약 → PPT |
+| **한글(HWPX)** | `.hwpx` | 텍스트/표 추출 → 요약 → PPT |
 | **웹/텍스트** | `.html`, `.htm`, `.md`, `.txt` | 텍스트 파싱 → 요약 → PPT |
 
 **테이블형 파일**: 숫자 데이터를 분석하고 차트(라인, 파이, 막대)를 자동 생성합니다.
@@ -45,10 +48,11 @@ description: 다양한 형식의 파일(CSV, 엑셀, PDF, Word, PPT, HTML, Markd
 
 ## 개요
 
-이 스킬은 3단계 파이프라인으로 보고서를 자동 생성합니다:
+이 스킬은 파이프라인으로 보고서를 자동 생성합니다:
 
+0. **템플릿 분석** (선택) — 회사 PPT 템플릿의 레이아웃, 테마 색상, 폰트를 자동 추출
 1. **파일 분석** — 파일 형식을 자동 감지하여 데이터 분석 또는 텍스트 추출
-2. **PPT 생성** — python-pptx로 브랜드 템플릿에 내용을 삽입한 .pptx 파일 생성
+2. **PPT 생성** — python-pptx로 템플릿 스타일에 맞춰 .pptx 파일 생성 (플레이스홀더 우선 사용)
 3. **이메일 요약** — 핵심 내용을 수신자별 톤(임원용/팀원용)으로 이메일 본문 생성
 
 ## 사전 요구사항
@@ -60,6 +64,24 @@ pip install -r scripts/requirements.txt
 필요 패키지: `python-pptx`, `pandas`, `matplotlib`, `openpyxl`, `python-docx`, `pdfplumber`, `beautifulsoup4`
 
 ## 워크플로우
+
+### Step 0: 템플릿 분석 (선택)
+
+사용자가 회사 PPT 템플릿을 제공하면 자동으로 분석합니다:
+
+1. 슬라이드 크기(16:9, 4:3 등) 감지
+2. 테마 색상(accent, text, background 등) 추출
+3. 레이아웃(표지, 콘텐츠, 빈 슬라이드 등) 분류
+4. 플레이스홀더(제목, 본문 영역) 위치 파악
+5. 폰트 패밀리 추출
+
+```bash
+# 템플릿 분석만 실행
+python scripts/template_analyzer.py --input 회사템플릿.pptx
+
+# JSON으로 결과 출력
+python scripts/template_analyzer.py --input 회사템플릿.pptx --json
+```
 
 ### Step 1: 파일 분석
 
@@ -83,7 +105,8 @@ python scripts/analyze_data.py --input <파일경로> --output output/
 분석 결과를 기반으로 PPT를 생성합니다:
 
 1. `scripts/create_pptx.py`를 실행합니다
-2. 브랜드 템플릿이 있으면 적용합니다
+2. 회사 템플릿이 있으면 레이아웃/색상/폰트를 자동 적용합니다
+3. 템플릿의 플레이스홀더가 있으면 거기에 내용을 삽입하고, 없으면 비율 좌표로 배치합니다
 3. 5장 슬라이드 구성:
    - **표지**: 보고서 제목, 날짜, 작성자
    - **요약**: 핵심 KPI 또는 주요 내용 요약
@@ -108,10 +131,20 @@ python scripts/generate_email.py --analysis output/analysis.json --type both
 
 ### 전체 실행
 
-위 3단계를 한 번에 실행합니다:
+위 단계를 한 번에 실행합니다:
 
 ```bash
+# 기본 실행
 python scripts/generate_report.py --input <파일경로> --output output/
+
+# 회사 PPT 템플릿 적용
+python scripts/generate_report.py --input <파일경로> --template 회사템플릿.pptx --output output/
+
+# HWPX 파일 → PPT 변환
+python scripts/generate_report.py --input 보고서.hwpx --output output/
+
+# HWPX 템플릿에 데이터 채우기
+python scripts/generate_report.py --input data.csv --hwpx-template 양식.hwpx --output output/
 ```
 
 ## 샘플 데이터로 실습
@@ -149,13 +182,19 @@ doc-automation/
 ├── SKILL.md                           # 스킬 정의 파일
 ├── scripts/
 │   ├── generate_report.py             # 전체 파이프라인 실행
-│   ├── analyze_data.py                # 파일 분석 (테이블+문서 모두 지원)
-│   ├── create_pptx.py                 # PPT 생성 (python-pptx)
+│   ├── analyze_data.py                # 파일 분석 (테이블+문서+HWPX 지원)
+│   ├── hwpx_parser.py                # HWPX 파일 파서 (텍스트/표/이미지 추출)
+│   ├── hwpx_template.py              # HWPX 템플릿 엔진 (플레이스홀더 치환)
+│   ├── create_pptx.py                 # PPT 생성 (StyleConfig 기반)
+│   ├── style_config.py               # 색상/폰트/좌표 설정 클래스
+│   ├── template_analyzer.py          # 회사 PPT 템플릿 분석
 │   ├── generate_email.py              # 이메일 요약 생성
 │   ├── create_brand_template.py       # 브랜드 PPT 템플릿 생성
 │   └── requirements.txt               # Python 의존성
 ├── samples/
-│   └── weekly_sales.csv               # 샘플 데이터
+│   ├── weekly_sales.csv               # 샘플 데이터
+│   ├── template_16x9.pptx            # 16:9 샘플 템플릿
+│   └── template_4x3.pptx             # 4:3 샘플 템플릿
 ├── templates/
 │   └── email/
 │       ├── executive.md               # 임원용 이메일 템플릿
