@@ -18,7 +18,7 @@ api_keys:
 
 # ── MCP 연동 (선택사항, 모드2 자동화용) ──
 integrations:
-  slack_webhook: "https://hooks.slack.com/services/xxx/yyy/zzz"
+  slack_webhook: ""               # GitHub Secrets 또는 환경변수(SLACK_WEBHOOK_URL)로 주입. 여기에 직접 URL을 넣지 마세요.
 
 # ── 기본 분야 설정 (선택사항) ──
 # 설정하면 매번 분야를 묻지 않고 해당 분야로 바로 실행

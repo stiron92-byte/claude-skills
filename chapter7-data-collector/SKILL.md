@@ -240,17 +240,83 @@ python report_generator.py /mnt/user-data/outputs/collected_data.json /mnt/user-
 **이 모드에서 생성되는 코드는 사용자 환경(로컬 PC, GitHub Actions)에서 실행되므로
 requests, feedparser 등 HTTP 라이브러리를 자유롭게 사용한다.**
 
-생성물:
-1. `data_pipeline/` 디렉토리에 Python 수집/분석 스크립트
-2. `data_pipeline/.github/workflows/daily_collect.yml` — GitHub Actions cron
-3. `data_pipeline/config.yaml` — 사용자가 채울 설정 파일
-4. `data_pipeline/README.md` — 설치/실행 가이드
-5. 전체를 zip으로 묶어서 `/mnt/user-data/outputs/`에 저장 + present_files로 제공
+`automation_builder.py`를 사용하여 zip 패키지를 생성한다.
+또는 Claude가 직접 파일을 생성하는 경우에도 **아래 명세를 반드시 준수**한다.
 
-GitHub Actions 템플릿 핵심:
-- cron: '0 9 * * *' (매일 오전 9시)
-- 환경변수로 API 키 주입 (GitHub Secrets 사용)
-- Slack webhook 알림 (선택사항)
+### 6.1 필수 생성 파일 목록
+
+zip 패키지(`data_pipeline/`)에는 아래 **9개 파일이 반드시 모두 포함**되어야 한다.
+하나라도 빠지면 독자/사용자 환경에서 정상 동작하지 않는다.
+
+| # | 파일 경로 | 역할 | 필수 |
+|---|----------|------|------|
+| 1 | `run_pipeline.py` | 전체 파이프라인 엔트리포인트 (수집→분석→보고서→알림 순차 실행) | ✅ |
+| 2 | `collector.py` | RSS/API 데이터 수집 (requests, feedparser 사용) | ✅ |
+| 3 | `analyzer.py` | 키워드 빈도, 센티먼트, 시점 분류, 이상 신호 분석 | ✅ |
+| 4 | `report_generator.py` | 분석 결과 → Markdown 보고서 생성 | ✅ |
+| 5 | `slack_notifier.py` | Slack Webhook 알림 전송 | ✅ |
+| 6 | `config.yaml` | 키워드, 소스, 출력 설정 | ✅ |
+| 7 | `requirements.txt` | Python 의존성 (requests, feedparser, pyyaml) | ✅ |
+| 8 | `README.md` | 설치/실행/GitHub Actions 설정 가이드 | ✅ |
+| 9 | `.github/workflows/daily_collect.yml` | GitHub Actions 워크플로 | ✅ |
+
+**⚠️ `.github/workflows/daily_collect.yml`이 누락되면 GitHub에 push해도 자동 실행이 되지 않는다.
+zip 생성 후 반드시 이 파일이 포함되었는지 확인한다.**
+
+### 6.2 `daily_collect.yml` 필수 내용
+
+`templates/github_actions_template.yml`을 참조하되, 아래 요소가 반드시 포함되어야 한다:
+
+```yaml
+on:
+  schedule:
+    - cron: '0 0 * * *'   # UTC 0시 = KST 9시. 반드시 UTC 기준으로 작성.
+  workflow_dispatch:        # 수동 실행 버튼. 반드시 포함.
+
+# ...
+
+    - name: Run data collection pipeline
+      env:
+        NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: python run_pipeline.py    # 엔트리포인트는 반드시 run_pipeline.py
+
+    - name: Upload report artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: trend-report-${{ github.run_number }}
+        path: reports/*.md
+        retention-days: 30
+```
+
+### 6.3 `slack_notifier.py` 필수 패턴
+
+Slack Webhook URL은 **환경변수를 우선 읽고, 없으면 config.yaml에서 폴백**한다.
+이 패턴을 지키지 않으면 GitHub Actions에서 Secrets → 환경변수로 주입된 URL을 읽지 못한다.
+
+```python
+import os
+
+# 필수 패턴: 환경변수 우선, config.yaml 폴백
+webhook_url = os.environ.get("SLACK_WEBHOOK_URL") or slack_config.get("webhook_url", "")
+```
+
+### 6.4 `config.yaml` 보안 규칙
+
+- `slack.webhook_url`은 **반드시 빈 문자열(`""`)로 생성**한다.
+- 사용자의 실제 Webhook URL을 config.yaml에 하드코딩하면 **GitHub push 시 URL이 노출**되는 보안 사고가 발생한다.
+- 주석으로 반드시 아래 안내를 포함한다:
+  ```yaml
+  webhook_url: ""  # GitHub Secrets 또는 환경변수로 주입. 여기에 직접 URL을 넣지 마세요.
+  ```
+
+### 6.5 zip 생성 및 제공
+
+1. `automation_builder.py`를 호출하거나, 직접 파일을 생성한다.
+2. `data_pipeline/` 디렉토리를 zip으로 압축한다.
+3. `/mnt/user-data/outputs/`에 저장한다.
+4. `present_files` 도구로 viewer 제공 + 다운로드 가능하게 한다.
+5. **zip 생성 후 검증**: `.github/workflows/daily_collect.yml`이 zip에 포함되어 있는지 확인한다.
 
 ---
 

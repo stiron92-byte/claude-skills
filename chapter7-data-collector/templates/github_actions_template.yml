@@ -2,7 +2,7 @@ name: Daily Data Collection - {{KEYWORD}}
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 매일 오전 9시 (UTC)
+    - cron: '0 0 * * *'  # UTC 0시 = KST 9시
   workflow_dispatch:  # 수동 실행 가능
 
 env:
@@ -33,20 +33,20 @@ jobs:
           STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: python collect_and_report.py
+        run: python run_pipeline.py
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
         with:
           name: trend-report-${{ github.run_number }}
-          path: output/*.md
+          path: reports/*.md
           retention-days: 30
 
       - name: Commit report to repository
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add output/
+          git add reports/
           git diff --cached --quiet || git commit -m "chore: add daily trend report $(date +%Y-%m-%d)"
           git push
 
