@@ -1,0 +1,106 @@
+domain: beauty
+display_name: "뷰티/화장품"
+
+keywords:
+  - "화장품"
+  - "뷰티"
+  - "스킨케어"
+  - "메이크업"
+  - "올리브영"
+  - "성분"
+  - "선크림"
+  - "세럼"
+  - "K-뷰티"
+  - "K-beauty"
+  - "skincare"
+  - "cosmetics"
+
+sources:
+  free:
+    - type: rss
+      name: "Allure Beauty"
+      url: "https://www.allure.com/feed/rss"
+      priority: 1
+    - type: rss
+      name: "Byrdie"
+      url: "https://www.byrdie.com/rss"
+      priority: 2
+    - type: rss
+      name: "식약처 공지사항"
+      url: "https://www.mfds.go.kr/brd/m_99/rss.do"
+      priority: 3
+    - type: web_search
+      name: "뷰티 트렌드 검색"
+      query_template: "{keyword} 트렌드 2025"
+      priority: 1
+    - type: web_search
+      name: "올리브영 트렌드"
+      query_template: "올리브영 {keyword} 인기 신제품"
+      priority: 1
+    - type: web_search
+      name: "화해 성분 트렌드"
+      query_template: "화해 {keyword} 성분 추천"
+      priority: 2
+    - type: web_search
+      name: "글로벌 뷰티"
+      query_template: "K-beauty {keyword} trend global"
+      priority: 2
+
+  paid:
+    - type: api
+      name: "NewsAPI 뷰티"
+      requires_key: newsapi
+      query_template: "{keyword} AND (beauty OR skincare OR cosmetics OR K-beauty)"
+    - type: api
+      name: "YouTube 뷰티 트렌드"
+      requires_key: youtube_data
+      query_template: "{keyword} 뷰티 리뷰"
+
+keyword_expansion:
+  rules:
+    - type: ingredient_group
+      description: "성분명 → 관련 성분군 확장"
+      examples:
+        레티놀: ["레틴알", "바쿠치올", "비타민A 유도체", "레티노이드"]
+        나이아신아마이드: ["비타민B3", "나이아신", "니코틴아마이드"]
+        비타민C: ["아스코르빅애씨드", "비타민C 유도체", "AA2G"]
+        히알루론산: ["HA", "저분자 히알루론산", "소듐히알루로네이트"]
+        세라마이드: ["피부장벽", "지질", "콜레스테롤"]
+    - type: brand_competitors
+      description: "브랜드 → 같은 카테고리 경쟁 브랜드 확장"
+      examples:
+        이니스프리: ["아이오페", "한율", "설화수", "라네즈"]
+        닥터지: ["메디힐", "CNP", "리얼바리어"]
+    - type: seasonal
+      description: "현재 월 기준 시즌 키워드 추가"
+      mapping:
+        spring: ["봄 메이크업", "톤업", "자외선차단 준비", "꽃분증 피부"]
+        summer: ["워터프루프", "쿨링", "모공관리", "자외선차단", "선크림 추천"]
+        autumn: ["가을 스킨케어", "보습 전환기", "환절기 피부"]
+        winter: ["보습", "장벽크림", "건조 피부", "수분크림", "입술 보호"]
+
+analysis:
+  framework:
+    - name: "성분 트렌드"
+      method: "keyword_frequency"
+      description: "성분명 언급 빈도 변화 추적, 새로 등장한 성분 발견"
+    - name: "브랜드 동향"
+      method: "entity_tracking"
+      description: "브랜드별 신제품 출시 빈도, 언급량 변화"
+    - name: "가격대별 트렌드"
+      method: "price_segment"
+      description: "럭셔리 vs 로드샵 vs 인디 브랜드 트렌드 비교"
+    - name: "글로벌 vs 국내"
+      method: "cross_market"
+      description: "해외 K-뷰티 반응 vs 국내 트렌드 차이 분석"
+    - name: "계절성 분석"
+      method: "seasonal_pattern"
+      description: "계절에 따른 성분/제품 관심도 변화"
+
+report:
+  highlight_sections:
+    - "지금 뜨는 성분 TOP 5 (근거 포함)"
+    - "주목할 브랜드/제품"
+    - "계절별 트렌드 변화"
+    - "글로벌 K-뷰티 동향"
+  tone: "전문적이되 읽기 쉽게, 실용적 정보 중심"

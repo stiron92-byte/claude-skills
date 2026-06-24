@@ -1,0 +1,81 @@
+# 나레이션 영상 생성 설정
+# 이 파일을 config.yaml로 복사하여 사용하세요.
+
+# === 이미지 생성 ===
+IMAGE_STYLE: "minimal illustration, soft pastel colors, clean white background"
+IMAGE_MODEL: "gemini-2.5-flash-image"
+IMAGE_DELAY: 3  # API 호출 간 대기 시간 (초), Rate limit 방지
+
+# === TTS 나레이션 ===
+# 보이스 추천 (부드러운 여성): Kore, Leda, Aoede
+# 보이스 추천 (차분한 남성): Charon, Orus
+# 보이스 추천 (밝고 에너지): Puck, Zephyr
+TTS_VOICE: "Kore"  # 부드럽고 차분한 여성 보이스
+TTS_MODEL: "gemini-2.5-flash-preview-tts"
+TTS_STYLE: "Speak naturally like a warm, gentle woman narrating a story. Use soft tone with natural breathing pauses. Slow down slightly at emotional moments. Do not sound robotic."
+TTS_DELAY: 2  # API 호출 간 대기 시간 (초)
+
+# === 오디오 분석 (자막 타임스탬프) ===
+AUDIO_MODEL: "gemini-2.5-flash"
+
+# === 영상 합성 ===
+RESOLUTION: "1920x1080"
+FPS: 30
+FADE_DURATION: 1.0  # 세그먼트 전환 페이드 (초)
+SEGMENT_GAP: 0.5  # 세그먼트 간 무음 간격 (초), 화면 전환 여유
+BGM_VOLUME: 0.15  # BGM 볼륨 (0.0 ~ 1.0)
+FONT_SIZE: 24  # 자막 폰트 크기
+
+# === 텍스트 처리 ===
+SEGMENT_MAX_CHARS: 200  # 세그먼트 최대 글자수
+LANGUAGE: "ko"  # 언어 코드
+
+# =====================================================
+# 이미지 스타일 프리셋 (--image-style 옵션으로 선택 가능)
+# =====================================================
+# 실행 시 대화형으로 선택하거나, --image-style 옵션으로 직접 지정
+#
+#  1. minimal      - 미니멀 일러스트 (기본값)
+#  2. watercolor   - 수채화
+#  3. ghibli       - 지브리 / 로파이 애니메이션
+#  4. clay3d       - 소프트 3D / 클레이
+#  5. impressionist - 인상파 유화
+#  6. flat         - 플랫 디자인
+#  7. pencil       - 연필 스케치
+#  8. cyberpunk    - 사이버펑크 네온
+#  9. retro        - 빈티지 레트로 포스터
+# 10. cinematic    - 포토리얼리스틱 / 시네마틱
+
+# =====================================================
+# 채널 유형별 프리셋 예시 (아래를 복사하여 위 값을 덮어쓰세요)
+# =====================================================
+
+# --- 자기계발 채널 ---
+# IMAGE_STYLE: "minimal illustration, soft colors, clean layout"
+# TTS_VOICE: "Kore"
+# TTS_STYLE: "Speak gently and inspiringly, like a wise friend sharing life advice. Natural pauses between thoughts. Warm and encouraging tone."
+# BGM_VOLUME: 0.15
+
+# --- 역사 채널 ---
+# IMAGE_STYLE: "vintage sketch, sepia tone, historical illustration"
+# TTS_VOICE: "Charon"
+# TTS_STYLE: "Narrate like a seasoned documentary storyteller. Deep, resonant voice with dramatic pauses at key moments. Build tension naturally."
+# BGM_VOLUME: 0.12
+
+# --- 요리 채널 ---
+# IMAGE_STYLE: "warm watercolor food illustration, clean white background"
+# TTS_VOICE: "Leda"
+# TTS_STYLE: "Speak warmly and conversationally, like explaining a recipe to a close friend in the kitchen. Relaxed pace, friendly and inviting tone."
+# BGM_VOLUME: 0.10
+
+# --- 수면/명상 ---
+# IMAGE_STYLE: "abstract art, dark gradient, calming colors"
+# TTS_VOICE: "Kore"
+# TTS_STYLE: "Whisper very softly and extremely slowly. Long, gentle pauses between sentences. Soothing and hypnotic rhythm, like guiding someone into peaceful sleep."
+# BGM_VOLUME: 0.08
+
+# --- 뉴스 브리핑 ---
+# IMAGE_STYLE: "clean infographic, modern flat design, data visualization"
+# TTS_VOICE: "Fenrir"
+# TTS_STYLE: "Speak clearly and professionally like a news anchor delivering a briefing. Confident, measured pace. Neutral and authoritative tone."
+# BGM_VOLUME: 0.10

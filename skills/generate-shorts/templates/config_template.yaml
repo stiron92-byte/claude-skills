@@ -1,0 +1,38 @@
+# generate-shorts 설정 파일
+# config.yaml 또는 config.json으로 저장하여 --config 옵션으로 전달
+
+# 영상 설정
+width: 1080                    # 쇼츠 가로 해상도
+height: 1920                   # 쇼츠 세로 해상도
+
+# 자막 스타일
+subtitle_font_size: 28         # 자막 폰트 크기
+subtitle_font_color: "white"   # 자막 색상
+subtitle_border_width: 2       # 자막 테두리 두께
+
+# 인트로/아웃트로 (텍스트 오버레이)
+intro_duration: 2              # 인트로 길이(초)
+outro_duration: 2              # 아웃트로 길이(초)
+outro_text: "구독과 좋아요 부탁드립니다!"
+
+# 쇼츠 설정
+max_shorts: 10                 # 최대 쇼츠 수
+min_duration: 15               # 최소 구간 길이(초)
+max_duration: 60               # 최대 구간 길이(초)
+
+# 하이라이트 선별 기준
+selection_criteria:
+  emotion_intensity: true      # 감정 강도
+  info_density: true           # 정보 밀도
+  impact: true                 # 임팩트
+  independence: true           # 독립성
+
+# 언어
+language: "ko"
+
+# 봇 감지 우회 (환경변수 대체 가능)
+# cookie_browser: "chrome"     # YT_COOKIE_BROWSER
+# proxy: "socks5://..."        # YT_PROXY
+
+# 디스크 절약
+cleanup_raw_sections: true

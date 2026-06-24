@@ -1,0 +1,27 @@
+# 나레이션 영상 생성 설정 (기본값)
+
+# === 이미지 생성 ===
+IMAGE_STYLE: "minimal illustration, soft pastel colors, clean white background"
+IMAGE_MODEL: "gemini-2.5-flash-image"
+IMAGE_DELAY: 3
+
+# === TTS 나레이션 ===
+TTS_VOICE: "Kore"  # 부드럽고 차분한 여성 보이스
+TTS_MODEL: "gemini-2.5-flash-preview-tts"
+TTS_STYLE: "Speak naturally like a warm, gentle woman narrating a story. Use soft tone with natural breathing pauses. Slow down slightly at emotional moments. Do not sound robotic."
+TTS_DELAY: 2
+
+# === 오디오 분석 ===
+AUDIO_MODEL: "gemini-2.5-flash"
+
+# === 영상 합성 ===
+RESOLUTION: "1920x1080"
+FPS: 30
+FADE_DURATION: 1.0
+SEGMENT_GAP: 0.5  # 세그먼트 간 무음 간격 (초)
+BGM_VOLUME: 0.50
+FONT_SIZE: 24
+
+# === 텍스트 처리 ===
+SEGMENT_MAX_CHARS: 200
+LANGUAGE: "ko"

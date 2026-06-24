@@ -1,0 +1,104 @@
+domain: finance
+display_name: "금융/투자"
+
+keywords:
+  - "주식"
+  - "금융"
+  - "투자"
+  - "증시"
+  - "경제"
+  - "금리"
+  - "환율"
+  - "코스피"
+  - "나스닥"
+  - "S&P"
+  - "채권"
+  - "ETF"
+  - "FOMC"
+  - "반도체"
+  - "stock"
+  - "finance"
+  - "market"
+
+sources:
+  free:
+    - type: rss
+      name: "한국경제 RSS"
+      url: "https://www.hankyung.com/feed/all-news"
+      priority: 1
+    - type: rss
+      name: "매일경제 RSS"
+      url: "https://www.mk.co.kr/rss/30000001/"
+      priority: 2
+    - type: rss
+      name: "Bloomberg Markets RSS"
+      url: "https://feeds.bloomberg.com/markets/news.rss"
+      priority: 2
+    - type: rss
+      name: "SEC EDGAR Company Filings RSS"
+      url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=8-K&dateb=&owner=include&count=20&search_text=&action=getcompany&RSS"
+      priority: 3
+    - type: web_search
+      name: "금융 트렌드 웹검색"
+      query_template: "{keyword} 시장 동향 2025"
+      priority: 1
+    - type: web_search
+      name: "경제 지표 검색"
+      query_template: "{keyword} 경제지표 전망"
+      priority: 2
+
+  paid:
+    - type: api
+      name: "FRED API"
+      requires_key: fred
+      query_template: "interest rate, CPI, unemployment, GDP"
+    - type: api
+      name: "NewsAPI 금융"
+      requires_key: newsapi
+      query_template: "{keyword} AND (stock OR market OR economy OR finance)"
+
+keyword_expansion:
+  rules:
+    - type: sector_related
+      description: "업종/종목명 → 관련 종목 및 업종 키워드 확장"
+      examples:
+        반도체: ["삼성전자", "SK하이닉스", "TSMC", "NVIDIA", "파운드리", "HBM", "CHIPS Act"]
+        금리: ["FOMC", "기준금리", "국채", "금리인하", "금리인상", "연준"]
+        2차전지: ["LG에너지솔루션", "삼성SDI", "CATL", "리튬", "전고체배터리"]
+    - type: event_keywords
+      description: "시장 이벤트 키워드 자동 포함"
+      examples:
+        상시: ["실적발표", "IPO", "공시", "M&A"]
+    - type: seasonal
+      description: "분기별 이벤트 키워드"
+      mapping:
+        spring: ["1분기 실적", "주주총회", "배당"]
+        summer: ["2분기 실적", "반기보고서"]
+        autumn: ["3분기 실적", "추경"]
+        winter: ["4분기 전망", "내년 경제 전망", "연간 실적"]
+
+analysis:
+  framework:
+    - name: "가격/지표 변화율"
+      method: "time_series_change"
+      description: "1개월/3개월/6개월 변화율 계산, 이동평균 비교"
+    - name: "거래량 이상 탐지"
+      method: "volume_anomaly"
+      description: "평균 대비 이상 거래량 구간 탐지"
+    - name: "뉴스 센티먼트"
+      method: "sentiment_ratio"
+      description: "수집된 뉴스의 긍정/부정/중립 비율 변화"
+    - name: "매크로 연결"
+      method: "macro_correlation"
+      description: "관련 경제지표(금리, CPI 등)와의 연관성 분석"
+    - name: "이벤트 임팩트"
+      method: "event_timeline"
+      description: "주요 이벤트(FOMC, 실적발표 등) 전후 시장 반응"
+
+report:
+  highlight_sections:
+    - "핵심 수치 요약표 (가격, 변화율, 거래량)"
+    - "주요 이벤트 타임라인"
+    - "업종/종목 비교"
+    - "리스크 요인 분석"
+  tone: "객관적, 수치 중심, 투자 조언은 절대 하지 않음"
