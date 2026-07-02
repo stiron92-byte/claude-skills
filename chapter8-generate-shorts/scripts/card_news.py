@@ -233,22 +233,61 @@ def render_card(card: dict, series_label: str, footer: str, out_path: str):
     return warnings
 
 
+# --- 나레이션 (edge-tts) ---
+
+def get_audio_duration(path: str) -> float:
+    try:
+        r = subprocess.run(
+            ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+             "-of", "csv=p=0", path],
+            capture_output=True, text=True, timeout=15
+        )
+        return float(r.stdout.strip())
+    except Exception:
+        return 0.0
+
+
+def synth_narration(text: str, voice: str, out_path: str) -> bool:
+    """edge-tts로 나레이션 합성. 무료지만 인터넷 필요 (비공식 MS 엔드포인트).
+    실패해도 파이프라인은 계속 가야 하므로 True/False만 반환한다."""
+    text = " ".join(str(text).split())
+    if not text:
+        return False
+    cmd = [sys.executable, "-m", "edge_tts", "--voice", voice,
+           "--text", text, "--write-media", out_path]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+    except subprocess.TimeoutExpired:
+        return False
+    return r.returncode == 0 and os.path.exists(out_path) and os.path.getsize(out_path) > 0
+
+
 # --- 카드 -> 쇼츠 영상 ---
 
 def build_video(card_paths: list, out_path: str, seconds: float, fade: float,
-                fps: int, zoom: bool, bgm: str | None) -> bool:
-    """카드 PNG들을 크로스페이드 + 미세 줌으로 이어붙여 1080x1920 mp4 생성."""
+                fps: int, zoom: bool, bgm: str | None,
+                durations: list | None = None,
+                narrations: list | None = None) -> bool:
+    """카드 PNG들을 크로스페이드 + 미세 줌으로 이어붙여 1080x1920 mp4 생성.
+
+    durations: 카드별 표시 시간(초). 없으면 전부 seconds.
+               나레이션이 있으면 main()이 나레이션 길이에 맞춰 늘려서 넘겨준다.
+    narrations: 카드별 나레이션 오디오 경로(None 허용). 각 카드가 완전히
+                나타난 직후 재생되도록 adelay로 타임라인에 배치해 amix로 섞는다.
+    """
     n = len(card_paths)
     if n == 0:
         return False
+    durs = [float(d) for d in (durations or [seconds] * n)]
+    narrs = list(narrations or [None] * n)
 
     inputs = []
-    for p in card_paths:
-        inputs.extend(["-framerate", str(fps), "-loop", "1", "-t", f"{seconds}", "-i", p])
+    for p, d in zip(card_paths, durs):
+        inputs.extend(["-framerate", str(fps), "-loop", "1", "-t", f"{d:.3f}", "-i", p])
 
-    frames = int(seconds * fps)
     parts = []
-    for i in range(n):
+    for i, d in enumerate(durs):
+        frames = max(int(d * fps), 1)
         if zoom:
             # 2배 업스케일 후 줌 — 저해상도 zoompan의 미세 떨림(jitter) 완화
             parts.append(
@@ -260,40 +299,73 @@ def build_video(card_paths: list, out_path: str, seconds: float, fade: float,
         else:
             parts.append(f"[{i}:v]format=yuv420p[v{i}];")
 
-    # xfade 체인: 카드당 seconds초, 겹침 fade초
+    # xfade 체인: k번째 전환 시작 offset = (앞 카드 길이 합) - k*fade
     if n == 1:
-        parts.append("[v0]copy[vout]")
+        parts.append("[v0]copy[vout];")
     else:
         prev = "v0"
-        for i in range(1, n):
-            label = "vout" if i == n - 1 else f"x{i}"
-            offset = i * (seconds - fade)
+        for k in range(1, n):
+            label = "vout" if k == n - 1 else f"x{k}"
+            offset = sum(durs[:k]) - k * fade
             parts.append(
-                f"[{prev}][v{i}]xfade=transition=fade:duration={fade}:offset={offset:.3f}[{label}];"
+                f"[{prev}][v{k}]xfade=transition=fade:duration={fade}:offset={offset:.3f}[{label}];"
             )
             prev = label
+
+    total = sum(durs) - (n - 1) * fade
+
+    # --- 오디오: 무음 베이스 + 나레이션(타임라인 배치) + bgm(루프, 낮은 볼륨) 믹스 ---
+    extra_inputs = []
+    mix_labels = []
+    idx = n
+
+    # 무음 베이스 — 전체 길이를 보장하는 바닥 트랙
+    extra_inputs.extend(["-f", "lavfi", "-t", f"{total:.2f}", "-i", "anullsrc=r=48000:cl=stereo"])
+    mix_labels.append(f"[{idx}:a]")
+    idx += 1
+
+    for i, npath in enumerate(narrs):
+        if not (npath and os.path.exists(npath)):
+            continue
+        # 카드 i가 완전히 보이는 시점(전환 fade 완료) + 0.3초에 나레이션 시작
+        card_start = sum(durs[:i]) - i * fade
+        delay_ms = int(max(card_start + (fade if i > 0 else 0) + 0.3, 0) * 1000)
+        extra_inputs.extend(["-i", npath])
+        parts.append(
+            f"[{idx}:a]aresample=48000,aformat=channel_layouts=stereo,"
+            f"adelay={delay_ms}:all=1[na{i}];"
+        )
+        mix_labels.append(f"[na{i}]")
+        idx += 1
+
+    if bgm and os.path.exists(bgm):
+        # -stream_loop -1: bgm이 짧아도 루프 (-shortest는 영상을 잘라버리므로 금지)
+        extra_inputs.extend(["-stream_loop", "-1", "-i", bgm])
+        vol = 0.15 if len(mix_labels) > 1 else 0.6  # 나레이션 있으면 배경으로 깔리게
+        parts.append(f"[{idx}:a]aresample=48000,aformat=channel_layouts=stereo,volume={vol}[bga];")
+        mix_labels.append("[bga]")
+        idx += 1
+
+    if len(mix_labels) == 1:
+        parts.append(f"{mix_labels[0]}anull[aout];")
+    else:
+        parts.append(
+            "".join(mix_labels)
+            + f"amix=inputs={len(mix_labels)}:duration=longest:normalize=0[aout];"
+        )
+
     filter_str = "".join(parts).rstrip(";")
 
-    total = n * seconds - (n - 1) * fade
-    cmd = ["ffmpeg", "-y", *inputs]
-    if bgm and os.path.exists(bgm):
-        # -stream_loop -1: bgm이 영상보다 짧아도 루프. -shortest 대신 -t total로 길이 고정
-        # (-shortest는 짧은 bgm에 맞춰 영상 뒷부분을 통째로 잘라버린다)
-        cmd.extend(["-stream_loop", "-1", "-i", bgm])
-        audio_map = ["-map", f"{n}:a", "-af", "volume=0.6"]
-    else:
-        cmd.extend(["-f", "lavfi", "-t", f"{total:.2f}", "-i", "anullsrc=r=48000:cl=stereo"])
-        audio_map = ["-map", f"{n}:a"]
-
-    cmd.extend([
+    cmd = [
+        "ffmpeg", "-y", *inputs, *extra_inputs,
         "-filter_complex", filter_str,
-        "-map", "[vout]", *audio_map,
+        "-map", "[vout]", "-map", "[aout]",
         "-t", f"{total:.2f}",
         "-c:v", "libx264", "-preset", "fast", "-crf", "20",
         "-c:a", "aac", "-b:a", "128k",
         "-movflags", "+faststart",
         out_path,
-    ])
+    ]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     except subprocess.TimeoutExpired:
@@ -319,6 +391,10 @@ def main():
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--no-zoom", action="store_true", help="미세 줌 효과 끄기")
     parser.add_argument("--bgm", default="", help="배경음악 파일 (없으면 무음 트랙)")
+    parser.add_argument("--tts", action="store_true",
+                        help="카드별 나레이션 합성 (edge-tts 필요: pip install edge-tts, 인터넷 필수)")
+    parser.add_argument("--tts-voice", default="ko-KR-SunHiNeural",
+                        help="edge-tts 보이스 (기본: ko-KR-SunHiNeural, 남성: ko-KR-InJoonNeural)")
     args = parser.parse_args()
 
     if not os.path.exists(args.cards):
@@ -358,13 +434,38 @@ def main():
         for w in all_warnings:
             print(f"  - {w}")
 
+    durations = None
+    narrations = None
+    if args.video and args.tts:
+        print(f"\n=== 나레이션 합성 (edge-tts, {args.tts_voice}) ===")
+        durations, narrations = [], []
+        for i, card in enumerate(cards, 1):
+            text = str(card.get("narration") or "").strip()
+            if not text:
+                # narration 필드가 없으면 제목+펀치로 대체 (품질을 위해 narration 작성 권장)
+                title = " ".join(" ".join(str(t).split()) for t in card.get("title_lines", []))
+                punch = str(card.get("punch", "")).strip()
+                text = f"{title}. {punch}." if punch else title
+            npath = os.path.join(args.output, f"narration_{i:02d}.mp3")
+            if text and synth_narration(text, args.tts_voice, npath):
+                ndur = get_audio_duration(npath)
+                # 카드 길이를 나레이션에 맞춰 확장 (전환 fade x2 + 여유 확보)
+                durations.append(max(args.seconds, ndur + 1.5))
+                narrations.append(npath)
+                print(f"  [{i:02d}] {ndur:.1f}s | {text[:36]}")
+            else:
+                durations.append(args.seconds)
+                narrations.append(None)
+                print(f"  [{i:02d}] 합성 실패 — 이 카드는 무음 (edge-tts 설치/인터넷 확인)")
+
     if args.video:
         print(f"\n=== 카드 쇼츠 영상 조립 ===")
         video_dir = os.path.dirname(args.video)
         if video_dir:
             os.makedirs(video_dir, exist_ok=True)
         ok = build_video(card_paths, args.video, args.seconds, args.fade,
-                         args.fps, not args.no_zoom, args.bgm or None)
+                         args.fps, not args.no_zoom, args.bgm or None,
+                         durations, narrations)
         if ok:
             size_mb = os.path.getsize(args.video) / 1024 / 1024
             print(f"  완료: {args.video} ({size_mb:.1f}MB)")

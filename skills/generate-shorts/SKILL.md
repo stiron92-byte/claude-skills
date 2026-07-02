@@ -153,6 +153,12 @@ python3 scripts/run_pipeline.py --url "$URL" --candidates-only --skip-setup
 python3 scripts/card_news.py --cards output/cards.json --output output/cards/ \
   --video output/cards/cards_short.mp4 --seconds 4
 
+# 3-1) 나레이션 포함 버전 (권장): AI 성우가 각 카드의 narration을 읽어주고,
+#      카드 길이가 나레이션 길이에 자동으로 맞춰진다.
+#      필요: pip install edge-tts --break-system-packages (무료, 인터넷 필수)
+python3 scripts/card_news.py --cards output/cards.json --output output/cards/ \
+  --video output/cards/cards_short.mp4 --tts
+
 # 4) [Claude] 생성된 PNG를 Read로 열어 검수 (텍스트 넘침/겹침/오탈자)
 ```
 
@@ -171,7 +177,8 @@ python3 scripts/card_news.py --cards output/cards.json --output output/cards/ \
         {"label": "실전 기준", "body": "여러 번 학습 결과, 로스 12~11 구간이\n가장 안정적인 품질"},
         {"label": "예외 사례", "body": "7까지 내려가도 문제없던 경우 있음"},
         {"label": "진짜 변수", "body": "로스보다 에폭 수가 중요"}
-      ]
+      ],
+      "narration": "로스는 낮을수록 좋다고 생각하기 쉬운데요, 사실은 오해입니다. 실제로 여러 번 학습해 보면 로스 12에서 11 구간이 가장 안정적이었고, 로스 숫자보다는 에폭 수가 훨씬 중요합니다."
     }
   ]
 }
@@ -181,6 +188,9 @@ python3 scripts/card_news.py --cards output/cards.json --output output/cards/ \
 - `title_lines`: 질문/도발형 문구, **최대 2줄, 줄당 8자 내외** (길면 자동 축소되지만 짧게 쓰는 게 예쁘다)
 - `punch`: 반전/답변 한 마디, **8자 이내** (예: "오해입니다", "비밀은 이것")
 - `points`: 2~3개. `label` 6자 이내, `body` 2줄 이내(줄당 ~22자, 넘치면 자동 줄바꿈·말줄임)
+- `narration`: `--tts` 사용 시 AI 성우가 읽는 문장. **구어체 2~3문장(10~20초 분량)**으로
+  카드 내용을 자연스럽게 풀어 쓴다. 카드 표시 시간이 이 길이에 자동으로 맞춰진다.
+  생략하면 제목+펀치를 그대로 읽는다 (어색하므로 꼭 작성 권장)
 - 영상 대본의 음성인식 오류는 문맥으로 교정해서 쓴다
 - 렌더러가 출력한 "경고"(폰트 축소/잘림)가 있으면 해당 카드 문구를 줄여 다시 렌더링한다
 
