@@ -1,15 +1,33 @@
 # generate-shorts 레퍼런스
 
-## 파이프라인 구조
+## 파이프라인 구조 (큐레이션 모드 — 기본)
 
 ```
-run_pipeline.py
-  |-> setup.sh              (Phase 0: 환경 설정)
-  |-> extract_subtitles.py   (Phase 1: 자막 추출)
-  |-> select_highlights.py   (Phase 2: 하이라이트 선별)
-  |-> generate_shorts.py     (Phase 3: 쇼츠 생성)
-  |-> [결과 보고]             (Phase 4: metadata.json 읽기)
+run_pipeline.py --candidates-only
+  |-> setup.sh                              (Phase 0: 환경 설정)
+  |-> extract_subtitles.py                  (Phase 1: 자막 추출)
+  |-> select_highlights.py --mode candidates (Phase 2a: 후보 ~25개)
+[Claude: candidates.json 검토 -> highlights.json 작성]   (Phase 2b)
+generate_shorts.py --highlights ...          (Phase 3: 쇼츠 생성)
+[Claude: 프레임 추출 -> 검수 체크리스트]      (Phase 3.5)
 ```
+
+전자동 모드는 `run_pipeline.py --url URL` (Phase 2b/3.5 생략, 품질 낮음).
+
+## 후크 오버레이
+
+검은 인트로 카드(기본 꺼짐) 대신, 본편 첫 2.5초 위에 후크 텍스트를 얹는다:
+
+```
+drawtext=textfile='hook.txt':fontsize=64:fontcolor=white:
+  x=(w-text_w)/2:y=h*0.14:line_spacing=14:
+  box=1:boxcolor=black@0.45:boxborderw=22:
+  enable='between(t,0,2.5)':fontfile='...'
+```
+
+- 텍스트는 textfile로 전달 (따옴표/콜론 이스케이프 문제 회피, 여러 줄 지원)
+- `wrap_text()`가 12자 기준으로 자동 줄바꿈
+- 관련 config: `hook_overlay`, `hook_duration`, `hook_font_size`, `intro_card`, `outro_enabled`
 
 ## 봇 감지 우회 전략
 
@@ -94,11 +112,42 @@ yt-dlp --download-sections "*125.3-183.7" \
 
 ## FFmpeg 주요 명령
 
-### 세로 크롭 + 자막
+### 세로 변환 (레이아웃 3종)
+
+원본 16:9를 9:16으로 바꾸는 방식. 콘텐츠 종류에 맞게 고른다
+(자세한 선택 기준은 SKILL.md의 "영상 레이아웃 선택" 표 참고).
+아래 필터는 `generate_shorts.py`의 `build_layout_filtergraph()`가 만드는 것과 동일하다.
+
+**fit_blur (기본, 잘림 없음)** — 화면 녹화·코드·슬라이드·강의·게임 등:
+
+```bash
+ffmpeg -i input.mp4 -filter_complex \
+"[0:v]split=2[bg][fg];\
+[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:1[bgb];\
+[fg]scale=1080:1920:force_original_aspect_ratio=decrease[fgs];\
+[bgb][fgs]overlay=(W-w)/2:(H-h)/2,ass='sub.ass'[outv]" \
+  -map "[outv]" -map "0:a?" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
+```
+
+> 자막은 `subtitles=`(SRT) 대신 **직접 만든 ASS**(`ass=`)로 굽는다.
+> SRT를 subtitles 필터로 쓰면 libass가 PlayRes를 기본 384x288로 잡아 FontSize를
+> 최종 프레임(1920)에 6배 이상 확대해 자막이 화면을 덮어버린다.
+> `generate_shorts.py`의 `write_ass_from_srt()`가 PlayResX/Y를 1080x1920으로 박은
+> ASS를 생성하므로 FontSize가 실제 픽셀이 되고, `WrapStyle: 0`으로 긴 줄이 자동 줄바꿈된다.
+
+**crop (가운데만, 좌우 잘림)** — 인물 중앙 토킹헤드 전용:
 
 ```bash
 ffmpeg -i input.mp4 \
-  -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles='sub.srt':force_style='FontSize=28,Alignment=2,MarginV=80'" \
+  -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,ass='sub.ass'" \
+  -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
+```
+
+**fit (단색 레터박스)**:
+
+```bash
+ffmpeg -i input.mp4 \
+  -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,ass='sub.ass'" \
   -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
 ```
 

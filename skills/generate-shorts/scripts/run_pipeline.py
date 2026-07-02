@@ -63,6 +63,14 @@ def main():
     parser.add_argument("--skip-setup", action="store_true", help="Phase 0 (환경 설정) 건너뛰기")
     parser.add_argument("--skip-subtitles", action="store_true", help="Phase 1 (자막 추출) 건너뛰기 (이미 추출된 경우)")
     parser.add_argument("--skip-highlights", action="store_true", help="Phase 2 (하이라이트 선별) 건너뛰기 (이미 선별된 경우)")
+    parser.add_argument(
+        "--layout", default="fit_blur",
+        help="세로 변환 방식: fit_blur(기본, 잘림 없음)|crop(가운데만, 좌우 잘림)|fit(단색 레터박스)"
+    )
+    parser.add_argument(
+        "--candidates-only", action="store_true",
+        help="Phase 2a(후보 생성)까지만 실행 후 종료 — Claude가 후보를 검토해 highlights.json을 작성하는 큐레이션 모드용 (권장)"
+    )
     args = parser.parse_args()
 
     output_dir = args.output
@@ -79,6 +87,7 @@ def main():
     print(f"  URL:    {args.url}")
     print(f"  쇼츠:   {args.count}개")
     print(f"  언어:   {args.lang}")
+    print(f"  레이아웃: {args.layout}")
     print(f"  출력:   {output_dir}/")
 
     pipeline_start = time.time()
@@ -123,6 +132,32 @@ def main():
     # --- Phase 2: 하이라이트 선별 ---
     highlights_json = os.path.join(output_dir, "highlights.json")
 
+    # 큐레이션 모드: 후보만 만들고 Claude에게 넘긴다 (품질 핵심 단계)
+    if args.candidates_only:
+        candidates_json = os.path.join(output_dir, "candidates.json")
+        select_script = os.path.join(script_dir, "select_highlights.py")
+        ok = run_phase("Phase 2a: 후보 선별 (Claude 큐레이션용)", [
+            "python3", select_script,
+            "--transcript", transcript_json,
+            "--output", candidates_json,
+            "--mode", "candidates",
+            "--candidates-count", "25",
+            "--lang", args.lang,
+        ], timeout=60)
+        if not ok:
+            print("\n후보 선별 실패.")
+            sys.exit(1)
+        print(f"\n{'='*60}")
+        print("  다음 단계: Phase 2b (Claude가 직접 수행)")
+        print(f"{'='*60}")
+        print(f"  1. {candidates_json} 와")
+        print(f"     {os.path.join(output_dir, 'transcript_timestamped.txt')} 를 읽고")
+        print(f"  2. 최종 {highlights_json} 작성 (SKILL.md Phase 2b 스키마 참조)")
+        print(f"  3. 쇼츠 생성:")
+        print(f"     python3 scripts/generate_shorts.py --highlights {highlights_json} \\")
+        print(f"       --url \"{args.url}\" --output {shorts_dir} --srt {os.path.join(output_dir, 'transcript.srt')} --layout {args.layout}")
+        sys.exit(0)
+
     if not args.skip_highlights:
         select_script = os.path.join(script_dir, "select_highlights.py")
         ok = run_phase("Phase 2: 하이라이트 선별", [
@@ -153,6 +188,7 @@ def main():
         "--highlights", highlights_json,
         "--url", args.url,
         "--output", shorts_dir,
+        "--layout", args.layout,
     ]
     if os.path.exists(srt_path):
         generate_cmd.extend(["--srt", srt_path])

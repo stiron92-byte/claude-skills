@@ -6,12 +6,12 @@
   },
   "metadata": {
     "description": "책 『Claude Code Skills』에서 다루는 업무 자동화 스킬 모음 — 문서·PPT, 엑셀, 회의록, 콘텐츠 리서치/리퍼포징, 쇼츠·나레이션 영상 자동화",
-    "version": "1.2.0"
+    "version": "1.3.0"
   },
   "plugins": [
     {
       "name": "claude-skills-book",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "description": "8개 업무 자동화 스킬 모음: 문서·PPT 자동화(doc-automation), 엑셀 자동화(excel-automation), 회의록 정리(meeting-minutes), 콘텐츠 리서치(content-research), 데이터 수집·리서치(data-collector), 콘텐츠 리퍼포징(content-repurpose), 유튜브 쇼츠 생성(generate-shorts), 나레이션 영상 생성(narration-video). 설치 후 자연어로 자동 트리거됩니다.",
       "source": "./",
       "strict": false,

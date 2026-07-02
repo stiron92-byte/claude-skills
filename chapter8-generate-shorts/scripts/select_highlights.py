@@ -10,6 +10,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 
 
@@ -51,6 +52,70 @@ CONTEXT_WORDS_EN = [
     "this one", "that one", "as I said", "earlier",
     "as mentioned", "going back to", "like I said",
 ]
+
+
+def _dedupe_repeats(text: str) -> str:
+    """연속으로 반복되는 어구를 하나로 줄인다.
+    YouTube 자동자막은 롤링 방식이라 같은 구절이 2~3번 겹쳐 들어온다
+    (예: "쭉 가져오고 준비를 한 다음에 쭉 가져오고 준비를 한 다음에 쭉 가져오고 준비를 한 다음에").
+    2회뿐 아니라 3회 이상 연속 반복도 한 번으로 줄인다.
+    """
+    words = text.split()
+    out = []
+    i = 0
+    n = len(words)
+    while i < n:
+        matched = False
+        # 길이가 긴 반복부터 검사(최대 8단어)
+        for length in range(min(8, (n - i) // 2), 0, -1):
+            block = words[i:i + length]
+            # 같은 블록이 몇 번 연속되는지 센다
+            j = i + length
+            while j + length <= n and words[j:j + length] == block:
+                j += length
+            if j > i + length:  # 최소 1회 반복 발견 -> 블록 하나만 남기고 전부 스킵
+                out.extend(block)
+                i = j
+                matched = True
+                break
+        if not matched:
+            out.append(words[i])
+            i += 1
+    return " ".join(out)
+
+
+def clean_caption_text(text: str) -> str:
+    """자막 원문을 제목/후크로 쓸 수 있게 정리한다.
+    자동자막에는 화자 표시(>>), 효과음 태그([음악],[박수]), 롤링 중복이 섞여 있어
+    이를 제거하지 않으면 인트로 카드와 해시태그에 그대로 노출된다.
+    """
+    if not text:
+        return ""
+    t = text
+    # 효과음/설명 태그 제거: [음악], (웃음), （박수） 등
+    t = re.sub(r"[\[\(（][^\]\)）]*[\]\)）]", " ", t)
+    t = t.replace("♪", " ")
+    # 화자/이어짐 표시 제거: >>, ->>, >>>
+    t = re.sub(r"-?>>+", " ", t)
+    # 공백 정리 후 반복 어구 축약
+    t = re.sub(r"\s+", " ", t).strip()
+    t = _dedupe_repeats(t)
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def make_title(text: str, index: int, max_len: int = 28) -> tuple:
+    """정리된 자막에서 (제목, 후크)를 만든다."""
+    clean = clean_caption_text(text)
+    if not clean:
+        return (f"하이라이트 {index}", f"하이라이트 {index}")
+    # 첫 문장(마침표/물음표/느낌표 기준) 우선, 없으면 앞부분
+    first = re.split(r"[.?!]\s", clean)[0].strip()
+    base = first if first else clean
+    title = base[:max_len].strip()
+    if len(base) > max_len:
+        title += "…"
+    hook = clean[:60].strip()
+    return (title or f"하이라이트 {index}", hook or title)
 
 
 def score_segment(text: str, duration: float, lang: str = "ko") -> dict:
@@ -171,16 +236,9 @@ def select_top_highlights(
     # 최종 형식으로 변환
     highlights = []
     for idx, w in enumerate(selected, 1):
-        # 제목 생성: 첫 문장 또는 앞 30자
         text = w["text"]
-        first_sentence = text.split(".")[0].split("?")[0].split("!")[0]
-        title = first_sentence[:30].strip()
-        if len(first_sentence) > 30:
-            title += "..."
-
-        # 후크: 가장 임팩트 있는 문장 (감정 키워드 포함)
-        sentences = re.split(r'[.?!]\s*', text) if 'import re' else text.split(". ")
-        hook = title
+        # 자막 원문을 정리해 제목/후크 생성 (>>, 효과음 태그, 롤링 중복 제거)
+        title, hook = make_title(text, idx)
 
         highlights.append({
             "index": idx,
@@ -200,8 +258,44 @@ def select_top_highlights(
     return highlights
 
 
-# re 모듈 import (score 함수 밖에서 사용)
-import re
+def select_candidates(windows: list, count: int = 25, lang: str = "ko") -> list:
+    """Claude 큐레이션용 후보 목록을 만든다.
+
+    최종 선별이 아니라 '검토 대상'이므로 자동 모드보다 겹침을 느슨하게 허용해
+    선택지를 넓힌다. 점수는 참고용일 뿐 — 규칙 스코어는 감정 키워드 개수를 셀 뿐
+    내용의 완결성/후크를 이해하지 못하므로, 최종 판단은 Claude가 내용을 읽고 한다.
+    """
+    for w in windows:
+        w["scores"] = score_segment(w["text"], w["duration"], lang)
+        w["score"] = w["scores"]["total"]
+
+    windows.sort(key=lambda x: x["score"], reverse=True)
+
+    selected = []
+    for w in windows:
+        if len(selected) >= count:
+            break
+        # 이미 뽑힌 후보와 70% 이상 겹치면 스킵 (다양성 확보)
+        dup = False
+        for s in selected:
+            inter = min(w["end"], s["end"]) - max(w["start"], s["start"])
+            if inter > 0 and inter >= 0.7 * min(w["duration"], s["duration"]):
+                dup = True
+                break
+        if not dup:
+            selected.append(w)
+
+    selected.sort(key=lambda x: x["start"])
+    return [
+        {
+            "start": w["start"],
+            "end": w["end"],
+            "duration": w["duration"],
+            "score": round(w["score"], 1),
+            "text": clean_caption_text(w["text"]),
+        }
+        for w in selected
+    ]
 
 
 def main():
@@ -212,6 +306,11 @@ def main():
     parser.add_argument("--lang", default="ko", help="언어 (기본: ko)")
     parser.add_argument("--min-duration", type=float, default=15, help="최소 구간 길이 초 (기본: 15)")
     parser.add_argument("--max-duration", type=float, default=60, help="최대 구간 길이 초 (기본: 60)")
+    parser.add_argument(
+        "--mode", choices=["auto", "candidates"], default="auto",
+        help="auto: 최종 highlights.json 자동 생성(품질 낮음) | candidates: Claude 큐레이션용 후보 목록 생성(권장)"
+    )
+    parser.add_argument("--candidates-count", type=int, default=25, help="candidates 모드 후보 수 (기본: 25)")
     args = parser.parse_args()
 
     if not os.path.exists(args.transcript):
@@ -242,6 +341,28 @@ def main():
     if not windows:
         print("ERROR: 조건에 맞는 구간이 없습니다. --min-duration 값을 줄여보세요.")
         sys.exit(1)
+
+    # candidates 모드: Claude가 검토할 후보 목록만 만들고 종료
+    if args.mode == "candidates":
+        print("후보 스코어링 중 (Claude 큐레이션용)...")
+        candidates = select_candidates(windows, args.candidates_count, args.lang)
+        os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
+        payload = {
+            "video_duration": round(total_duration, 1),
+            "note": (
+                "이 파일은 후보 목록이다. Claude가 내용을 읽고 최종 highlights.json을 "
+                "작성한다 (SKILL.md Phase 2b 참조). score는 참고용 규칙 점수일 뿐이다."
+            ),
+            "candidates": candidates,
+        }
+        with open(args.output, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+        print(f"\n=== 후보 {len(candidates)}개 저장: {args.output} ===")
+        for c in candidates[:10]:
+            print(f"  {c['start']:.0f}s-{c['end']:.0f}s ({c['duration']:.0f}s, {c['score']:.0f}점) | {c['text'][:40]}")
+        if len(candidates) > 10:
+            print(f"  ... 외 {len(candidates) - 10}개")
+        return
 
     # 스코어링 + 선별
     print("스코어링 및 선별 중...")
