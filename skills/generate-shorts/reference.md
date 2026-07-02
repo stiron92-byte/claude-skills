@@ -14,6 +14,15 @@ generate_shorts.py --highlights ...          (Phase 3: 쇼츠 생성)
 
 전자동 모드는 `run_pipeline.py --url URL` (Phase 2b/3.5 생략, 품질 낮음).
 
+## 카드뉴스 모드 (card_news.py)
+
+- 디자인 상수는 스크립트 상단에 고정: 1080x1920, 네이비 그라데이션(#12182E→#080910),
+  옐로 액센트(#FFC400), 민트 라벨(#94E2D5), 포인트 박스(#1C223A)
+- 텍스트 넘침 방지: `fit_font`(폭 초과 시 폰트 자동 축소), `wrap_body`(측정 기반 줄바꿈+말줄임)
+- 카드 영상 조립: 카드당 N초 + xfade 크로스페이드(offset = i*(N-fade)) + zoompan 미세 줌
+  (2배 업스케일 후 줌 — 저해상도 zoompan의 떨림 완화). `--bgm` 없으면 무음 트랙(anullsrc) 삽입
+- 의존성: Pillow(렌더), ffmpeg(영상). 외부 API 불필요
+
 ## 후크 오버레이
 
 검은 인트로 카드(기본 꺼짐) 대신, 본편 첫 2.5초 위에 후크 텍스트를 얹는다:

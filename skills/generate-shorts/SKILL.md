@@ -6,6 +6,8 @@ description: >
   세로 영상(1080x1920) 변환 + 후크 오버레이 + 자막 합성 → Claude 프레임 검수.
   화면 녹화·강의·코드·슬라이드처럼 가로가 넓은 영상도 잘림 없이 변환합니다
   (콘텐츠에 맞는 레이아웃 선택: fit_blur/crop/fit).
+  카드뉴스 모드도 지원: "카드뉴스", "개념 카드", "카드로 정리" 요청 시
+  영상 내용을 요약한 카드 이미지 세트(+ 카드 쇼츠 영상)를 생성합니다.
   claude.ai 컨테이너와 로컬 환경 모두 지원합니다.
   사용: /generate-shorts [유튜브URL]
 argument-hint: "[youtube-url] [shorts-count]"
@@ -132,6 +134,55 @@ Claude 큐레이션 없이 규칙 스코어만으로 한 번에 생성한다. �
 ```bash
 python3 scripts/run_pipeline.py --url "$URL" --count 10 --lang ko --layout fit_blur
 ```
+
+## 카드뉴스 모드 (이미지 세트 + 카드 쇼츠 영상)
+
+"카드뉴스", "개념 카드", "카드로 정리" 같은 요청이면 클립 대신 **내용 요약 카드**를 만든다.
+디자인 시스템(다크 네이비 + 옐로 액센트, 1080x1920)은 `scripts/card_news.py`에 고정되어 있고,
+Claude는 **내용(cards.json)만** 작성한다. 외부 API 불필요 (Pillow + ffmpeg).
+
+**절차**:
+
+```bash
+# 1) 자막 추출 (이미 있으면 생략)
+python3 scripts/run_pipeline.py --url "$URL" --candidates-only --skip-setup
+
+# 2) [Claude] transcript를 읽고 output/cards.json 작성 (아래 스키마)
+
+# 3) 카드 렌더링 (+ 옵션: 카드 쇼츠 영상)
+python3 scripts/card_news.py --cards output/cards.json --output output/cards/ \
+  --video output/cards/cards_short.mp4 --seconds 4
+
+# 4) [Claude] 생성된 PNG를 Read로 열어 검수 (텍스트 넘침/겹침/오탈자)
+```
+
+**cards.json 스키마와 작성 규칙**:
+
+```json
+{
+  "series_label": "Qwen-TTS 파인튜닝 · 핵심 개념",
+  "footer": "전체 강의는 채널에서 ▶",
+  "cards": [
+    {
+      "index": 1,
+      "title_lines": ["로스는", "낮을수록 좋다?"],
+      "punch": "오해입니다",
+      "points": [
+        {"label": "실전 기준", "body": "여러 번 학습 결과, 로스 12~11 구간이\n가장 안정적인 품질"},
+        {"label": "예외 사례", "body": "7까지 내려가도 문제없던 경우 있음"},
+        {"label": "진짜 변수", "body": "로스보다 에폭 수가 중요"}
+      ]
+    }
+  ]
+}
+```
+
+- 카드 1장 = 개념 1개. 보통 3~5장 세트
+- `title_lines`: 질문/도발형 문구, **최대 2줄, 줄당 8자 내외** (길면 자동 축소되지만 짧게 쓰는 게 예쁘다)
+- `punch`: 반전/답변 한 마디, **8자 이내** (예: "오해입니다", "비밀은 이것")
+- `points`: 2~3개. `label` 6자 이내, `body` 2줄 이내(줄당 ~22자, 넘치면 자동 줄바꿈·말줄임)
+- 영상 대본의 음성인식 오류는 문맥으로 교정해서 쓴다
+- 렌더러가 출력한 "경고"(폰트 축소/잘림)가 있으면 해당 카드 문구를 줄여 다시 렌더링한다
 
 ## 핵심 제약사항
 
