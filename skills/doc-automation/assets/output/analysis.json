@@ -1,0 +1,92 @@
+{
+  "period": {
+    "start": "2026-02-16",
+    "end": "2026-02-22"
+  },
+  "summary": {
+    "total_revenue": 58931000,
+    "total_quantity": 3356,
+    "avg_daily_revenue": 8418714,
+    "unique_products": 7,
+    "total_days": 7,
+    "revenue_change_rate": 46.4
+  },
+  "daily": {
+    "dates": [
+      "2026-02-16",
+      "2026-02-17",
+      "2026-02-18",
+      "2026-02-19",
+      "2026-02-20",
+      "2026-02-21",
+      "2026-02-22"
+    ],
+    "revenue": [
+      7781000,
+      8615000,
+      7520000,
+      8950000,
+      9405000,
+      6510000,
+      10150000
+    ],
+    "quantity": [
+      436,
+      489,
+      447,
+      495,
+      540,
+      373,
+      576
+    ]
+  },
+  "category": {
+    "names": [
+      "전자기기",
+      "생활용품",
+      "액세서리"
+    ],
+    "revenue": [
+      51920000,
+      3645000,
+      3366000
+    ],
+    "quantity": [
+      1884,
+      911,
+      561
+    ]
+  },
+  "top_items": [
+    {
+      "name": "무선 이어폰 Pro",
+      "revenue": 21600000,
+      "quantity": 720
+    },
+    {
+      "name": "스마트 워치 SE",
+      "revenue": 14360000,
+      "quantity": 359
+    },
+    {
+      "name": "에르고 키보드",
+      "revenue": 10500000,
+      "quantity": 350
+    },
+    {
+      "name": "USB-C 멀티허브",
+      "revenue": 5460000,
+      "quantity": 455
+    },
+    {
+      "name": "프리미엄 노트북 파우치",
+      "revenue": 3366000,
+      "quantity": 561
+    }
+  ],
+  "chart_paths": [
+    "../output/charts/daily_revenue.png",
+    "../output/charts/category_pie.png",
+    "../output/charts/top_products.png"
+  ]
+}
