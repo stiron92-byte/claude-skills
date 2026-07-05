@@ -396,7 +396,11 @@ def main():
         f.write(to_timestamped_text(chunks))
 
     if srt_path != clean_srt_path and os.path.exists(srt_path):
-        os.remove(srt_path)
+        # 정리 실패(파일 잠금 등)는 치명적이지 않으므로 전체 실행을 죽이지 않는다
+        try:
+            os.remove(srt_path)
+        except OSError as e:
+            print(f"경고: 임시 자막 파일 정리 실패 (무시): {e}")
 
     total_duration = chunks[-1]["timestamp"][1] if chunks else 0
     print(f"\n=== 자막 추출 완료 ===")

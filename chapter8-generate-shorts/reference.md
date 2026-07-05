@@ -14,6 +14,19 @@ generate_shorts.py --highlights ...          (Phase 3: 쇼츠 생성)
 
 전자동 모드는 `run_pipeline.py --url URL` (Phase 2b/3.5 생략, 품질 낮음).
 
+## 분할 실행 모드 (명령 시간 제한 환경 — 코워크 등)
+
+`generate_shorts.py` 플래그:
+
+- `--download-only`: 하이라이트 구간을 `output/cache/`에 내려받기만 하고 종료 (개당 ~20초)
+- `--only N[,M]`: 지정한 번호의 쇼츠만 처리. 결과는 기존 metadata.json에 병합됨
+- `--force`: 이미 완성된 쇼츠도 재생성 (기본은 자동 스킵 = 재개/resume)
+
+캐시 키는 `seg_{영상ID}_{번호}_{시작}-{끝}.mp4` — URL이나 구간 경계가 바뀌면
+자동으로 새로 다운로드한다(stale 캐시 방지). 다운로드 결과는 ffprobe로 검증해
+`.part` 같은 손상 파일이 캐시로 승격되지 않는다. 전 쇼츠 완료·검수 후에는
+`output/cache/`를 삭제해 디스크를 정리한다 (구간당 ~15MB).
+
 ## 카드뉴스 모드 (card_news.py)
 
 - 디자인 상수는 스크립트 상단에 고정: 1080x1920, 네이비 그라데이션(#12182E→#080910),

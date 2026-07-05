@@ -49,6 +49,28 @@ python3 scripts/generate_shorts.py \
 # Phase 3.5: Claude가 프레임 검수 (아래 체크리스트)
 ```
 
+### 명령 시간 제한이 있는 환경 (코워크 등) — 반드시 나눠 실행
+
+코워크처럼 **명령 하나당 실행 시간 제한(~45초)**이 있는 환경에서는 위 Phase 3 한 방 실행이
+타임아웃으로 죽는다 (쇼츠 1개 = 다운로드 ~20초 + 인코딩 ~25초, 여러 개면 확실히 초과).
+백그라운드 실행도 명령이 끝나면 정리되므로 소용없다. 대신 **다운로드와 인코딩을 명령 단위로 분리**한다:
+
+```bash
+# 3-a) 구간 다운로드만 (개당 ~20초, 전부 output/cache/에 저장)
+python3 scripts/generate_shorts.py --highlights output/highlights.json --url "$URL" \
+  --output output/shorts/ --download-only
+
+# 3-b) 쇼츠 하나씩 인코딩 (캐시 사용 → 개당 ~25초)
+python3 scripts/generate_shorts.py --highlights output/highlights.json --url "$URL" \
+  --output output/shorts/ --srt output/transcript.srt --layout fit_blur --only 1
+# ... --only 2, --only 3 식으로 반복
+```
+
+- **재실행 안전**: 이미 완성된 쇼츠는 자동으로 건너뛰고, 캐시된 구간은 다시 받지 않는다.
+  중간에 죽어도 같은 명령을 다시 실행하면 이어서 진행된다. 다시 만들려면 `--force`
+- `--only`로 만든 결과는 기존 metadata.json에 병합된다
+- 전부 끝나고 검수까지 통과하면 `output/cache/`를 삭제해 디스크를 정리한다
+
 ## Phase 2b: 하이라이트 큐레이션 (Claude가 직접 수행 — 품질의 핵심)
 
 `output/candidates.json`(후보 목록)과 `output/transcript_timestamped.txt`(전체 타임스탬프 대본)를
@@ -125,6 +147,12 @@ ffmpeg -y -ss 10 -i output/shorts/short_01.mp4 -frames:v 1 output/check_01_mid.p
 | `fit` | 단색(검정) 레터박스 | 배경을 깔끔하게 두고 싶을 때 |
 
 **확신이 없으면 `fit_blur`.** 강의·코드·화면 녹화를 `crop`으로 처리하면 좌우가 잘려 못 읽게 된다.
+
+**주의 — 원본에 자막이 구워진 영상(방송·예능 클립, 밈 영상 등)**: 인물 중심이라도 `crop`을 쓰면
+화면 전체 폭에 깔린 원본 자막과 B롤이 좌우로 잘린다. 이런 영상은 **fit_blur**를 쓴다.
+또한 원본 자막 위에 스킬 자막이 겹쳐 이중 자막이 되므로, 이 경우 highlights.json의
+`subtitles`를 빈 배열(`[]`)로 두어 스킬 자막을 생략하고 후크만 얹는 것을 권장한다.
+판단이 어려우면 Phase 3 전에 구간 프레임을 한 장 뽑아 원본 자막 유무를 눈으로 확인한다.
 
 ## 전자동 모드 (빠르지만 품질 타협)
 

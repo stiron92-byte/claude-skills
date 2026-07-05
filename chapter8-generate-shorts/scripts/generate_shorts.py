@@ -197,14 +197,15 @@ def has_audio_stream(video_path: str) -> bool:
 
 
 def get_duration(video_path: str) -> float:
-    result = subprocess.run(
-        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
-         "-of", "csv=p=0", video_path],
-        capture_output=True, text=True
-    )
     try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+             "-of", "csv=p=0", video_path],
+            capture_output=True, text=True
+        )
         return float(result.stdout.strip())
-    except ValueError:
+    except (ValueError, OSError):
+        # ffprobe 부재(FileNotFoundError 포함)나 출력 이상도 0으로 처리해 전체 실행을 살린다
         return 0.0
 
 
@@ -234,19 +235,25 @@ def download_section(url: str, start: float, end: float, output_path: str) -> bo
         if result is None:
             continue
 
-        # 파일 존재 확인 (정확한 경로)
+        # 파일 존재 확인 (정확한 경로) + 유효성 검증
+        # (손상/부분 파일이 영구 캐시로 승격되면 이후 모든 인코딩이 반복 실패한다)
         if os.path.exists(output_path):
-            random_delay()
-            return True
+            if get_duration(output_path) > 0:
+                random_delay()
+                return True
+            os.remove(output_path)
 
         # yt-dlp가 다른 이름으로 저장했을 수 있음 (문제 6)
+        # 단 .part/.ytdl 같은 미완성 임시 파일은 절대 승격하지 않는다
         base = os.path.splitext(output_path)[0]
-        candidates = glob.glob(f"{base}*")
+        candidates = [c for c in glob.glob(f"{base}*")
+                      if not c.endswith((".part", ".ytdl", ".temp"))]
         if candidates:
-            actual = candidates[0]
-            os.rename(actual, output_path)
-            random_delay()
-            return True
+            os.rename(candidates[0], output_path)
+            if get_duration(output_path) > 0:
+                random_delay()
+                return True
+            os.remove(output_path)
 
         if result.returncode != 0:
             stderr_lower = result.stderr.lower()
@@ -254,6 +261,16 @@ def download_section(url: str, start: float, end: float, output_path: str) -> bo
                 print(f"    봇 감지 - 쿠키 확인 필요")
 
     return False
+
+
+def _video_id(url: str) -> str:
+    """캐시 키용 영상 식별자. 같은 캐시 디렉토리를 다른 영상이 공유할 때
+    이전 영상의 구간을 재사용하는 사고를 막는다."""
+    m = re.search(r"(?:v=|youtu\.be/|/shorts/|/embed/)([A-Za-z0-9_-]{6,})", url or "")
+    if m:
+        return m.group(1)[:16]
+    fallback = re.sub(r"[^A-Za-z0-9_-]", "", url or "")
+    return (fallback[-12:] or "local")
 
 
 # --- 자막 추출 ---
@@ -548,6 +565,13 @@ def process_short(
 
     print(f"\n--- Short {index:02d}: {title} [{start:.1f}s - {end:.1f}s] ({duration:.0f}s) ---")
 
+    cache_dir = config.get("cache_dir", "")
+    # 캐시 키 = 영상ID + 번호 + 구간 경계.
+    # 경계가 빠지면 highlights 수정 후 stale 구간을 재사용하고,
+    # 영상ID가 빠지면 다른 영상의 구간을 재사용하는 사고가 난다.
+    cached = (os.path.join(cache_dir, f"seg_{_video_id(url)}_{index:02d}_{start:.1f}-{end:.1f}.mp4")
+              if cache_dir else None)
+
     width = config.get("width", 1080)
     height = config.get("height", 1920)
     intro_duration = config.get("intro_duration", 2)
@@ -575,11 +599,18 @@ def process_short(
         outro_path = os.path.join(tmpdir, f"outro.mp4")
         final_path = os.path.join(output_dir, f"short_{index:02d}.mp4")
 
-        # 1. 구간 다운로드
-        print(f"  1/4 구간 다운로드 중...")
-        if not download_section(url, start, end, raw_path):
-            print(f"  건너뜀: 다운로드 실패")
-            return None
+        # 1. 구간 확보 — 캐시 우선 (재실행/시간 제한 환경에서 재다운로드 방지)
+        if cached and os.path.exists(cached) and os.path.getsize(cached) > 0 and get_duration(cached) > 0:
+            print(f"  1/4 캐시된 구간 사용 ({os.path.basename(cached)})...")
+            shutil.copy2(cached, raw_path)
+        else:
+            print(f"  1/4 구간 다운로드 중...")
+            if not download_section(url, start, end, raw_path):
+                print(f"  건너뜀: 다운로드 실패")
+                return None
+            if cached:
+                os.makedirs(cache_dir, exist_ok=True)
+                shutil.copy2(raw_path, cached)
 
         # 본편 영상 정보 추출 (문제 8: fps 맞춤)
         video_info = get_video_info(raw_path)
@@ -592,7 +623,7 @@ def process_short(
             font_name = os.path.basename(font_path).replace(".ttc", "").replace(".ttf", "")
         ass_path = os.path.join(tmpdir, "sub.ass")
         n_events = 0
-        curated_subs = highlight.get("subtitles") or []
+        curated_subs = highlight.get("subtitles")
         if curated_subs:
             events = []
             for s in curated_subs:
@@ -603,8 +634,11 @@ def process_short(
             n_events = write_ass(events, ass_path, font_name, font_size,
                                  width, height, subtitle_margin_v, border_width)
             print(f"    재구성 자막 {n_events}개 사용 (Claude 큐레이션)")
+        elif curated_subs is not None:
+            # 명시적 빈 배열([]) = 자막을 의도적으로 생략 (원본에 자막이 구워진 영상 등)
+            print(f"    자막 생략 (subtitles: [])")
         else:
-            # 폴백: 원본 자동자막을 구간만 잘라 사용 (롤링 파편 그대로라 품질 낮음)
+            # 필드 없음 → 폴백: 원본 자동자막을 구간만 잘라 사용 (롤링 파편 그대로라 품질 낮음)
             extract_srt_for_section(srt_path, start, end, section_srt)
             if os.path.exists(section_srt) and os.path.getsize(section_srt) > 0:
                 n_events = write_ass_from_srt(section_srt, ass_path, font_name, font_size,
@@ -761,10 +795,49 @@ def main():
         "--layout", default="",
         help="세로 변환 방식: fit_blur(기본, 잘림 없음)|crop(가운데만, 좌우 잘림)|fit(단색 레터박스)"
     )
+    parser.add_argument(
+        "--only", default="",
+        help="지정한 번호의 쇼츠만 처리 (예: 2 또는 2,3) — 명령 시간 제한이 있는 환경(코워크)용"
+    )
+    parser.add_argument(
+        "--download-only", action="store_true",
+        help="하이라이트 구간을 캐시에 다운로드만 하고 종료 (다운로드/인코딩 분리 실행용)"
+    )
+    parser.add_argument(
+        "--force", action="store_true",
+        help="이미 완성된 쇼츠도 다시 생성 (기본은 건너뜀)"
+    )
     args = parser.parse_args()
 
     with open(args.highlights, "r", encoding="utf-8") as f:
         highlights = json.load(f)
+
+    # 하이라이트 정규화 — 다운로드/인코딩 두 경로가 같은 규칙을 쓰도록 한 곳에서 처리.
+    # (타입 오류 항목 하나가 배치 전체를 죽이거나, index 기본값이 경로마다 달라
+    #  캐시 키가 어긋나는 문제를 막는다)
+    normalized = []
+    for pos, h in enumerate(highlights, 1):
+        if not isinstance(h, dict):
+            print(f"경고: 하이라이트 {pos}번이 객체가 아님 — 건너뜀")
+            continue
+        try:
+            h["start"] = float(h["start"])
+            h["end"] = float(h["end"])
+        except (KeyError, TypeError, ValueError):
+            print(f"경고: 하이라이트 {pos}번 start/end 형식 오류 — 건너뜀")
+            continue
+        if h["end"] <= h["start"]:
+            print(f"경고: 하이라이트 {pos}번 구간 오류 (start >= end) — 건너뜀")
+            continue
+        try:
+            h["index"] = int(h.get("index", pos))
+        except (TypeError, ValueError):
+            h["index"] = pos
+        normalized.append(h)
+    if not normalized:
+        print("ERROR: 유효한 하이라이트가 없습니다.")
+        sys.exit(1)
+    highlights = normalized
 
     os.makedirs(args.output, exist_ok=True)
     os.makedirs("output/logs", exist_ok=True)
@@ -810,6 +883,59 @@ def main():
     if args.layout:
         config["layout"] = args.layout
 
+    # 구간 캐시: output/shorts -> output/cache (재실행 시 재다운로드 방지).
+    # --output이 "." 처럼 cwd 이상을 가리키면 부모가 작업 트리 밖이 되므로 output 내부로 고정
+    out_abs = os.path.abspath(args.output)
+    cwd_abs = os.path.abspath(os.getcwd())
+    if out_abs == cwd_abs or cwd_abs.startswith(out_abs + os.sep):
+        cache_dir = os.path.join(out_abs, "cache")
+    else:
+        cache_dir = os.path.join(os.path.dirname(out_abs), "cache")
+    config["cache_dir"] = cache_dir
+
+    only = set()
+    if args.only:
+        try:
+            only = {int(x) for x in args.only.split(",") if x.strip()}
+        except ValueError:
+            print(f"ERROR: --only 형식 오류 (예: 2 또는 2,3): {args.only}")
+            sys.exit(1)
+        if not only:
+            print(f"ERROR: --only에 유효한 번호가 없습니다: {args.only!r}")
+            sys.exit(1)
+        valid_idx = {h["index"] for h in highlights}
+        if not (only & valid_idx):
+            print(f"ERROR: --only {sorted(only)} 는 하이라이트에 없습니다 (있는 번호: {sorted(valid_idx)})")
+            sys.exit(1)
+        unknown = only - valid_idx
+        if unknown:
+            print(f"경고: --only 중 {sorted(unknown)} 는 하이라이트에 없어 무시됩니다")
+
+    # 다운로드 전용 모드: 구간만 캐시에 받고 종료 (코워크처럼 명령당 시간 제한이 있는 환경에서
+    # 다운로드(~20초)와 인코딩(~25초)을 별도 명령으로 나누기 위한 모드)
+    if args.download_only:
+        os.makedirs(cache_dir, exist_ok=True)
+        print(f"=== 구간 다운로드 전용 모드 (캐시: {cache_dir}) ===")
+        ok = 0
+        vid = _video_id(args.url)
+        for highlight in highlights:
+            idx = highlight["index"]
+            if only and idx not in only:
+                continue
+            start, end = highlight["start"], highlight["end"]
+            cached = os.path.join(cache_dir, f"seg_{vid}_{idx:02d}_{start:.1f}-{end:.1f}.mp4")
+            if os.path.exists(cached) and os.path.getsize(cached) > 0 and get_duration(cached) > 0:
+                print(f"[{idx:02d}] 이미 캐시됨 — 건너뜀")
+                ok += 1
+                continue
+            print(f"[{idx:02d}] {start:.1f}s-{end:.1f}s 다운로드...")
+            if download_section(args.url, start, end, cached):
+                ok += 1
+            else:
+                print(f"[{idx:02d}] 다운로드 실패")
+        print(f"완료: {ok}개 캐시됨. 이제 --only N 으로 하나씩 인코딩하세요.")
+        return
+
     print(f"=== 쇼츠 영상 생성 ===")
     print(f"하이라이트: {len(highlights)}개")
     print(f"출력: {args.output}")
@@ -823,14 +949,65 @@ def main():
     results = []
     failures = []
     for highlight in highlights:
-        idx = highlight.get("index", len(results) + 1)
+        idx = highlight["index"]
+        if only and idx not in only:
+            continue
+
+        # 재실행 안전: 이미 완성된 쇼츠는 건너뛴다 (시간 제한 환경에서 이어서 실행 가능).
+        # duration 검증까지 해서 손상/부분 파일이 성공으로 오인되지 않게 한다
+        final_path = os.path.join(args.output, f"short_{idx:02d}.mp4")
+        if not args.force and os.path.exists(final_path) and os.path.getsize(final_path) > 0 \
+                and get_duration(final_path) > 0:
+            size_mb = os.path.getsize(final_path) / 1024 / 1024
+            print(f"\n--- Short {idx:02d}: 이미 존재 — 건너뜀 (다시 만들려면 --force) ---")
+            title = highlight.get("title", f"Short {idx}")
+            hook = highlight.get("hook", "")
+            topic_tag = make_hashtag(title)
+            hashtags = ["#shorts", "#쇼츠"] + ([topic_tag] if topic_tag else [])
+            results.append({
+                "index": idx,
+                "file": f"short_{idx:02d}.mp4",
+                "title": title,
+                "hook": hook,
+                "reason": highlight.get("reason", ""),
+                "duration": round(get_duration(final_path), 1),
+                "size_mb": round(size_mb, 1),
+                "original_start": highlight.get("start"),
+                "original_end": highlight.get("end"),
+                "description": f"{hook}\n\n{' '.join(hashtags)}",
+                "hashtags": hashtags,
+            })
+            continue
+
         result = process_short(idx, highlight, args.url, args.output, srt_path, config)
         if result:
             results.append(result)
         else:
             failures.append({"index": idx, "title": highlight.get("title", ""), "reason": "처리 실패"})
 
+    run_success = len(results)
+    run_fail = len(failures)
+
     metadata_path = os.path.join(args.output, "metadata.json")
+    # --only 실행 시 기존 metadata와 병합 (부분 실행이 전체 목록을 지우지 않도록).
+    # 이번 실행에서 성공한 index는 기존 failures에서 빼고, 실패한 index는 기존 shorts에서 뺀다.
+    if only and os.path.exists(metadata_path):
+        merged, old_fail = {}, {}
+        try:
+            with open(metadata_path, "r", encoding="utf-8") as f:
+                old = json.load(f)
+            merged = {s.get("index"): s for s in old.get("shorts", []) if s.get("index") is not None}
+            old_fail = {x.get("index"): x for x in old.get("failures", []) if x.get("index") is not None}
+        except Exception as e:
+            print(f"경고: 기존 metadata.json 파싱 실패 — 이번 실행 결과만 기록합니다 ({e})")
+        for r in results:
+            merged[r["index"]] = r
+            old_fail.pop(r["index"], None)
+        for x in failures:
+            old_fail[x["index"]] = x
+            merged.pop(x["index"], None)
+        results = [merged[k] for k in sorted(merged)]
+        failures = [old_fail[k] for k in sorted(old_fail)]
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump({"shorts": results, "failures": failures}, f, ensure_ascii=False, indent=2)
 
@@ -838,9 +1015,11 @@ def main():
     total_duration = sum(r["duration"] for r in results)
 
     print(f"\n=== 생성 완료 ===")
-    print(f"성공: {len(results)}/{len(highlights)}개")
+    scope = f" (--only {sorted(only)})" if only else ""
+    print(f"이번 실행: 성공 {run_success}개 / 실패 {run_fail}개{scope}")
+    print(f"전체 목록: 쇼츠 {len(results)}개")
     if failures:
-        print(f"실패: {len(failures)}개")
+        print(f"실패 목록: {len(failures)}개")
         for f_item in failures:
             print(f"  [{f_item['index']:02d}] {f_item['title']} - {f_item['reason']}")
     print(f"총 용량: {total_size:.1f}MB")
