@@ -24,6 +24,6 @@ __pycache__/
 node_modules/
 
 # Third-party plugin clone used as a chapter5 teaching example (has its own .git)
-chapter5-skill-customization/marketingskills/
+chapter05-skill-customization/marketingskills/
 
 .bkit-memory.json

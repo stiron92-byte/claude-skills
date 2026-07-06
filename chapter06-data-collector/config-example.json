@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "gemini-proxy": {
+      "command": "uv",
+      "args": ["run", "--directory", "/스킬설치경로/narration-video/mcp_server", "gemini-proxy-mcp"],
+      "env": {
+        "GEMINI_API_KEY": "발급받은_API_키"
+      }
+    }
+  }
+}

@@ -67,3 +67,6 @@ cp -r skills/meeting-minutes ~/.claude/skills/meeting-minutes
 | `.claude-plugin/marketplace.json` | 플러그인 마켓플레이스 매니페스트 |
 
 스킬 내용을 수정할 때는 `skills/<스킬명>/`을 기준으로 변경하세요. (챕터 폴더는 책 본문용 스냅샷입니다.)
+
+
+
