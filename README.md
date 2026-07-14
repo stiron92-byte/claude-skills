@@ -67,7 +67,7 @@ cp -r skills/meeting-minutes ~/.claude/skills/meeting-minutes
 
 | 경로 | 용도 |
 |------|------|
-| `chapter02-*/ ~ chapter10-*/` | **학습용** — 책 챕터별 원본 (원고·예제·실행 결과 포함) |
+| `chapter02-*/ ~ chapter11-*/` | **학습용** — 책 챕터별 원본 (원고·예제·실습 샘플·실행 결과 포함) |
 | `skills/` | **배포용** — 플러그인으로 설치되는 스킬 본체 (위 마켓플레이스가 참조) |
 | `.claude-plugin/marketplace.json` | 플러그인 마켓플레이스 매니페스트 |
 | `PROMPT.MD` | 실습에서 사용하는 요청 프롬프트 모음 |
