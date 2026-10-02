@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "note": "실습 샘플 목록. kind: input(실습 입력), reference-output(참고용 완성 예시), offline-demo(네트워크 없이 진행하는 중간 결과). files는 samples/ 기준 상대 경로이며 와일드카드(*)를 쓸 수 있다.",
+  "sets": [
+    {
+      "id": "doc-fx-pdf",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "환율 주간 리포트 PDF → 보고용 PPT",
+      "kind": "input",
+      "folder": "2장-pdf2ppt",
+      "files": [
+        "doc-automation/example/example_1_pdf-to-ppt/260316_FX_weekly(KOR).pdf"
+      ],
+      "rights": "제3자 리포트로 보임. 재배포 권리 확인 전에는 내부 실습에만 사용(docs/gate0-handoff.md)."
+    },
+    {
+      "id": "doc-fx-pdf-results",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "환율 PDF 실습 완성 예시 PPT 2종",
+      "kind": "reference-output",
+      "folder": "2장-pdf2ppt/완성예시",
+      "files": [
+        "doc-automation/example/example_1_pdf-to-ppt/*.pptx"
+      ]
+    },
+    {
+      "id": "doc-url-ppt-result",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "URL(주가 페이지) → PPT 완성 예시",
+      "kind": "reference-output",
+      "folder": "2장-url2ppt/완성예시",
+      "files": [
+        "doc-automation/example/example_2_url-to-ppt/*.pptx"
+      ]
+    },
+    {
+      "id": "doc-company-ppt",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "가상 회사 문서 6개 + 팁스 공고 + 로고 → 기업 소개 PPT",
+      "kind": "input",
+      "folder": "2장-기업PPT",
+      "files": [
+        "doc-automation/example/example_3_comany-to-ppt/*"
+      ],
+      "note": "팁스 공고(.hwpx)는 배포용(암호화) 문서라 직접 읽을 수 없다. 한컴 뷰어에서 PDF로 저장해 함께 넣거나, 공고 원문 PDF를 K-Startup에서 받아 쓴다. 회사 문서 6개와 로고만으로도 실습할 수 있다."
+    },
+    {
+      "id": "doc-hwpx-template",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "HWPX 결재문서 양식에 내용만 바꾸기(불꽃축제 결과보고)",
+      "kind": "input",
+      "folder": "2장-hwpx양식",
+      "files": [
+        "doc-automation/example/example_4_hwpx-template/README.md",
+        "doc-automation/example/example_4_hwpx-template/fireworks_data.json",
+        "doc-automation/example/example_4_hwpx-template/결재문서_템플릿.hwpx",
+        "doc-automation/example/example_4_hwpx-template/원본_결재문서본문.hwpx"
+      ]
+    },
+    {
+      "id": "doc-hwpx-result",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "HWPX 실습 완성 예시",
+      "kind": "reference-output",
+      "folder": "2장-hwpx양식/완성예시",
+      "files": [
+        "doc-automation/example/example_4_hwpx-template/서울불꽃축제_결과보고.hwpx"
+      ]
+    },
+    {
+      "id": "doc-weekly-sales",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "주간 매출 CSV + 16:9·4:3 샘플 PPT 템플릿(스크립트 파이프라인 실습)",
+      "kind": "input",
+      "folder": "2장-주간보고",
+      "files": [
+        "doc-automation/samples/*"
+      ]
+    },
+    {
+      "id": "doc-weekly-sales-results",
+      "skill": "doc-automation",
+      "chapter": 2,
+      "title": "주간보고 분석 결과·이메일 완성 예시",
+      "kind": "reference-output",
+      "folder": "2장-주간보고/완성예시",
+      "files": [
+        "doc-automation/output/*"
+      ]
+    },
+    {
+      "id": "excel-practice",
+      "skill": "excel-automation",
+      "chapter": 3,
+      "title": "엑셀 실습 1~3 원본(고객명단 정리·쇼핑몰 매출 분석·멀티채널 취합)",
+      "kind": "input",
+      "folder": "3장-엑셀실습",
+      "files": [
+        "excel-automation/inputs/실습1_고객관리_원본.xlsx",
+        "excel-automation/inputs/실습2_쇼핑몰매출_원본.xlsx",
+        "excel-automation/inputs/실습3_멀티채널판매_원본.xlsx"
+      ],
+      "note": "v2에서 새로 만든 진짜 원본이다. 실습1에는 중복·전화번호·날짜 형식·이메일 오타·빈 칸·극단값이 심어져 있다. 실습3은 탭 7개(전체현황·상품마스터·재고현황·채널 4개)이며 통합관리 시트가 없다. tools/dev/make_excel_practice_inputs.py로 다시 만들 수 있다."
+    },
+    {
+      "id": "excel-practice-answer-key",
+      "skill": "excel-automation",
+      "chapter": 3,
+      "title": "엑셀 실습 1~3 정답표(강사·채점용)",
+      "kind": "reference-output",
+      "folder": "3장-엑셀실습/강사용",
+      "files": [
+        "excel-automation/inputs/answer_key.json"
+      ],
+      "note": "정리 후 행 수, 전화·날짜 정규화 기대값, 오타·이상값 행, 매출 합계·월별·카테고리별 값, 채널별 등록 상품 수·판매량 합계. 번호 열 기준이며 엑셀 행 번호는 번호+1이다."
+    },
+    {
+      "id": "excel-practice-results",
+      "skill": "excel-automation",
+      "chapter": 3,
+      "title": "엑셀 실습 1~3 완성 예시(v1.6.1 결과물)",
+      "kind": "reference-output",
+      "folder": "3장-엑셀실습/완성예시",
+      "files": [
+        "excel-automation/excel-automation-outputs/*.xlsx"
+      ],
+      "note": "v1.6.1에서 '실습 입력'으로 배포되던 파일들이다. 이미 정리완료·인사이트·통합관리 시트가 들어 있는 결과물이라 v2에서 완성 예시로 옮겼다."
+    },
+    {
+      "id": "excel-skill-prompts",
+      "skill": "excel-automation",
+      "chapter": 3,
+      "title": "excel-automation 스킬을 직접 만들어 보는 프롬프트",
+      "kind": "input",
+      "folder": "3장-스킬만들기",
+      "files": [
+        "excel-automation/prompt/*.md"
+      ]
+    },
+    {
+      "id": "meeting-recordings",
+      "skill": "meeting-minutes",
+      "chapter": 4,
+      "title": "회의 녹음 3개(한국어 2·영어 1)와 테스트 시나리오",
+      "kind": "input",
+      "folder": "4장-회의록",
+      "files": [
+        "meeting-minutes/example/*"
+      ],
+      "note": "녹음별 정답(참석자·결정·할 일·STT가 틀리게 적는 말)은 meeting-answer-key 세트에 있다."
+    },
+    {
+      "id": "meeting-text",
+      "skill": "meeting-minutes",
+      "chapter": 4,
+      "title": "회의 녹취록 텍스트(클로바노트 형식, 마케팅 주간회의)",
+      "kind": "input",
+      "folder": "4장-회의록",
+      "files": [
+        "meeting-minutes/inputs/마케팅주간회의_녹취록.txt"
+      ],
+      "note": "음성 없이 텍스트로 회의록을 만드는 실습. 결정 번복, 담당자·기한 없는 할 일, 불참자 언급, 잡담이 들어 있다."
+    },
+    {
+      "id": "meeting-answer-key",
+      "skill": "meeting-minutes",
+      "chapter": 4,
+      "title": "회의록 실습 정답표(강사·채점용)",
+      "kind": "reference-output",
+      "folder": "4장-회의록/강사용",
+      "files": [
+        "meeting-minutes/inputs/answer_key.json"
+      ],
+      "note": "텍스트 녹취록과 녹음 3개의 참석자·결정·할 일(담당자·기한)·숫자·다음 회의. 녹음은 STT 오인식(stt_traps)과 녹음만으로 확정할 수 없는 부분(unclear)을 따로 적었다."
+    },
+    {
+      "id": "repurpose-source",
+      "skill": "content-repurpose",
+      "chapter": 8,
+      "title": "리퍼포징 실습 원본(유튜브 대본: 퇴근 후 1시간 뉴스레터 1,000명)",
+      "kind": "input",
+      "folder": "8장-리퍼포징",
+      "files": [
+        "content-repurpose/inputs/원본_유튜브대본_뉴스레터1000명.md"
+      ],
+      "note": "이 저장소에서 직접 쓴 원본이다. 숫자 13개와 단서(유료화 안 함, 분야마다 다름)가 있어 결과물의 원본 충실도를 확인하기 좋다. 감사·갭 분석 실습(8-1·8-2)은 프롬프트에 목록이 들어 있어 별도 파일이 없다."
+    },
+    {
+      "id": "repurpose-answer-key",
+      "skill": "content-repurpose",
+      "chapter": 8,
+      "title": "리퍼포징·감사·갭 분석 실습 정답표(강사·채점용)",
+      "kind": "reference-output",
+      "folder": "8장-리퍼포징/강사용",
+      "files": [
+        "content-repurpose/inputs/answer_key.json"
+      ],
+      "note": "원본의 핵심 메시지·숫자·지어내면 안 되는 주장, 책 실습 8-1 목록 집계(카테고리 분포·경과 개월·시의성), 8-2 갭 분석 요점."
+    },
+    {
+      "id": "shorts-offline",
+      "skill": "generate-shorts",
+      "chapter": 9,
+      "title": "쇼츠 오프라인 데모: 미리 추출한 자막·하이라이트(YouTube 접속 없이 Phase 2b부터 진행)",
+      "kind": "offline-demo",
+      "folder": "9장-쇼츠/output",
+      "files": [
+        "generate-shorts/output/*.json",
+        "generate-shorts/output/*.srt",
+        "generate-shorts/output/*.txt",
+        "generate-shorts/output/shorts/*"
+      ]
+    },
+    {
+      "id": "narration-offline",
+      "skill": "narration-video",
+      "chapter": 10,
+      "title": "나레이션 영상 오프라인 데모: 세그먼트·메타데이터",
+      "kind": "offline-demo",
+      "folder": "10장-나레이션/output",
+      "files": [
+        "narration-video/output/*"
+      ]
+    }
+  ]
+}

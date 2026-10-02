@@ -1,0 +1,4 @@
+# Pinned 2026-10-01. Keep this file ASCII-only: pip reads it with the OS locale (cp949 on Korean Windows).
+# To update: python tools/check_pins.py --install --write-constraints
+pandas==2.3.3
+openpyxl==3.1.5

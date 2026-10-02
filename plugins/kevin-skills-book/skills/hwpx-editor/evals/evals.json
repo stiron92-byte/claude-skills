@@ -1,0 +1,52 @@
+{
+  "skill_name": "hwpx-editor",
+  "note": "files 경로는 저장소 루트 기준. 객관 항목은 verify_hwpx와 텍스트 검사로, [판단] 항목은 채점자가 판정한다.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "form-to-fireworks-report",
+      "book_prompt": "2-6",
+      "prompt": "이 양식은 그대로 두고 내용만 서울불꽃축제 결과 보고서로 바꿔줘.",
+      "files": ["plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/example/example_4_hwpx-template/원본_결재문서본문.hwpx"],
+      "expected_output": "같은 양식의 새 .hwpx. 제목·본문이 불꽃축제 결과 보고로 바뀌고, 사용자가 주지 않은 사실은 지어내지 않거나 확인 필요로 표시한다.",
+      "expectations": [
+        "원본과 다른 이름의 새 .hwpx 파일이 있다",
+        "verify_hwpx 검사(양식 보존: mimetype, 엔트리, 비XML 동일, XML 구조 동일)를 통과한다",
+        "원래 제목 '보고서 작성 서식 안내'가 남아 있지 않다",
+        "결과 문서에 '불꽃' 또는 '불꽃축제'가 들어 있다",
+        "[판단] 사용자가 주지 않은 구체적 수치(관람객 수, 예산 등)를 사실처럼 지어내지 않았거나, 지어낸 값을 응답에서 확인 필요로 명시했다"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "approval-line-change",
+      "book_prompt": "2-7",
+      "prompt": "이 결재문서 양식을 그대로 사용해서 서울 불꽃축제 운영 결과 보고서로 바꿔줘. 기관명은 한강사업본부, 담당자는 김한강, 결재자는 박여의로 해줘.",
+      "files": ["plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/example/example_4_hwpx-template/원본_결재문서본문.hwpx"],
+      "expected_output": "기관명·담당자·결재자가 바뀐 같은 양식의 .hwpx",
+      "expectations": [
+        "원본과 다른 이름의 새 .hwpx 파일이 있다",
+        "verify_hwpx 검사(양식 보존)를 통과한다",
+        "결과에 '한강사업본부', '김한강', '박여의'가 모두 있다",
+        "결과에 원래 기관명 '서울대공원'과 원래 담당자 '강준민'이 남아 있지 않다"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "fill-placeholder-form",
+      "book_prompt": "2장 본문 템플릿 채우기",
+      "prompt": "이 한글 양식에 fireworks_data.json 데이터를 채워서 보고서 만들어줘.",
+      "files": [
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/example/example_4_hwpx-template/결재문서_템플릿.hwpx",
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/example/example_4_hwpx-template/fireworks_data.json"
+      ],
+      "expected_output": "{{변수}}가 모두 채워진 .hwpx",
+      "expectations": [
+        "원본과 다른 이름의 새 .hwpx 파일이 있다",
+        "verify_hwpx 검사(양식 보존)를 통과한다",
+        "결과에 {{변수}} 자리표시자가 남아 있지 않다",
+        "결과에 '한강사업본부'와 '김한강'이 있다"
+      ]
+    }
+  ]
+}

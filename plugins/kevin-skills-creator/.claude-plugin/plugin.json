@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "kevin-skills-creator",
+  "displayName": "Claude Skills Book — 콘텐츠·영상",
+  "version": "2.0.0-alpha.1",
+  "description": "콘텐츠 리서치(content-research), 플랫폼별 리퍼포징(content-repurpose), 유튜브 쇼츠·카드뉴스(generate-shorts), 나레이션 영상(narration-video). 마케팅·홍보용 선택 플러그인.",
+  "author": {
+    "name": "humanist96",
+    "url": "https://github.com/humanist96"
+  },
+  "homepage": "https://github.com/humanist96/claude-skills",
+  "repository": "https://github.com/humanist96/claude-skills",
+  "keywords": [
+    "콘텐츠",
+    "마케팅",
+    "쇼츠",
+    "카드뉴스",
+    "영상",
+    "korean"
+  ]
+}

@@ -1,0 +1,317 @@
+{
+  "generated_by": "tools/dev/make_meeting_practice.py",
+  "text": {
+    "source": "마케팅주간회의_녹취록.txt",
+    "format": "클로바노트 내보내기 형식(머리글 + '화자 mm:ss' 줄 + 발언 줄)",
+    "date": "2026-03-09",
+    "attendees": [
+      "김민지",
+      "이준호",
+      "박서연",
+      "최동훈"
+    ],
+    "absent": [
+      "정하늘"
+    ],
+    "decisions": [
+      {
+        "key": "오픈일",
+        "must": [
+          "3월 30일"
+        ],
+        "note": "3월 23일 안은 취소(번복)"
+      },
+      {
+        "key": "광고 예산",
+        "must": [
+          "2,000만",
+          "1,500만",
+          "1,000만"
+        ],
+        "note": "총 4,500만 원"
+      },
+      {
+        "key": "챗봇",
+        "must": [
+          "챗봇"
+        ],
+        "note": "자주 묻는 질문 3가지(배송 일정·쿠폰·교환 반품) 우선 처리"
+      }
+    ],
+    "superseded": [
+      "3월 23일 오픈"
+    ],
+    "not_decisions": [
+      "SNS 비중 확대(첫 주 성과 후 재논의)",
+      "인플루언서 협업(다음 회의 안건)"
+    ],
+    "actions": [
+      {
+        "task": "물류팀 재고 수량 재확인 후 공유",
+        "owner": "이준호",
+        "due": "수요일"
+      },
+      {
+        "task": "광고 소재 3종 제작·업로드",
+        "owner": "최동훈",
+        "due": "금요일"
+      },
+      {
+        "task": "랜딩 페이지 문구 검수",
+        "owner": "미정",
+        "due": "오픈 전(3월 30일 전)",
+        "note": "담당자는 정하늘 복귀 후 결정"
+      },
+      {
+        "task": "챗봇 시나리오 초안",
+        "owner": "박서연",
+        "due": "미정"
+      },
+      {
+        "task": "인플루언서 후보 추리기",
+        "owner": "최동훈",
+        "due": "다음 회의(3월 16일) 전",
+        "note": "기한은 녹취에 명시되지 않은 추론. '미정'도 정답"
+      }
+    ],
+    "open_questions": [
+      "인플루언서 협업 여부 — 다음 회의",
+      "SNS 비중 확대 — 첫 주 성과 후"
+    ],
+    "numbers": [
+      "4,500만",
+      "2,000만",
+      "1,500만",
+      "1,000만",
+      "2.8%",
+      "3.5%",
+      "120건",
+      "4시간",
+      "70%",
+      "3월 27일"
+    ],
+    "next_meeting": "2026-03-16(월) 오전 10시",
+    "off_topic": [
+      "점심 메뉴(국숫집)"
+    ]
+  },
+  "audio": {
+    "test_sprint_meeting_ko.mp3": {
+      "language": "ko",
+      "attendees": [
+        "김PM",
+        "이개발",
+        "박디자인",
+        "정기획"
+      ],
+      "decisions": [
+        {
+          "key": "스프린트 목표",
+          "must": [
+            "로그인"
+          ]
+        },
+        {
+          "key": "소셜 로그인 이월",
+          "must": [
+            "소셜",
+            "다음 스프린트"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "task": "백엔드 API 마무리",
+          "owner": "이개발",
+          "due": "금요일"
+        },
+        {
+          "task": "메일 발송 서비스 옵션 검토 후 슬랙 공유",
+          "owner": "이개발",
+          "due": "내일"
+        },
+        {
+          "task": "로그인 UI 퍼블리싱 전달",
+          "owner": "박디자인",
+          "due": "수요일"
+        },
+        {
+          "task": "회원가입 페이지",
+          "owner": "박디자인",
+          "due": "목요일"
+        },
+        {
+          "task": "기획서 업데이트(비밀번호 찾기 이메일 인증)",
+          "owner": "정기획",
+          "due": "내일"
+        }
+      ],
+      "numbers": [
+        "70%"
+      ],
+      "next_meeting": "금요일 오후 2시(small 모델 인식. base 모델은 '52시'로 오인식)",
+      "stt_traps": {
+        "김 피암": "김PM",
+        "정기회": "정기획",
+        "유월": "이월",
+        "매일 발송/매일 서비스": "메일 발송/메일 서비스",
+        "AWS ss": "AWS SES(추정)",
+        "퍼글리싱": "퍼블리싱",
+        "백앤드 에이페이": "백엔드 API",
+        "52시": "오후 2시"
+      },
+      "unclear": []
+    },
+    "test_planning_meeting_ko.mp3": {
+      "language": "ko",
+      "date": "2024-03-15",
+      "attendees": [
+        "최부장",
+        "김과장",
+        "이대리",
+        "박사원"
+      ],
+      "decisions": [
+        {
+          "key": "구독 가격",
+          "must": [
+            "11,900"
+          ],
+          "note": "모델마다 다르게 인식된다. 제안 발언은 small 2회·medium·base+사전 4번 모두 '만천구백원'(11,900). 결정 발언은 small 11,900, medium·base+사전 1,900('만' 누락), base만 19,900 — 녹음 확인 권장"
+        },
+        {
+          "key": "베타 론칭",
+          "must": [
+            "4월 28일"
+          ]
+        },
+        {
+          "key": "AI 추천 단계 적용",
+          "must": [
+            "규칙",
+            "정식"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "task": "가격 정책 상세안 제출",
+          "owner": "김과장",
+          "due": "다음 주 월요일(medium 인식)"
+        },
+        {
+          "task": "결제 시스템 개발 착수·기술 로드맵 공유",
+          "owner": "이대리",
+          "due": "수요일"
+        },
+        {
+          "task": "인플루언서 리스트·상세 예산안",
+          "owner": "박사원",
+          "due": "금요일"
+        },
+        {
+          "task": "이사회 중간 보고",
+          "owner": "최부장",
+          "due": "다음 주 수요일"
+        }
+      ],
+      "numbers": [
+        "3억",
+        "1억 5천",
+        "9,900",
+        "14,900",
+        "30%",
+        "4주",
+        "3개월",
+        "50%",
+        "5명",
+        "2,000만",
+        "1,000명(얼리버드, medium 인식)"
+      ],
+      "next_meeting": "3월 22일 금요일 오전 10시",
+      "stt_traps": {
+        "월 1,900원": "'만' 누락 오인식(11,900) — 그대로 쓰면 오류",
+        "월 19,900원(base 결정 발언)": "다른 모델은 11,900으로 인식 — 확인 필요",
+        "이데리": "이대리",
+        "배타": "베타",
+        "구동 모델": "구독 모델",
+        "올리버드": "얼리버드",
+        "인플로언서": "인플루언서",
+        "이주면": "2주면(추정)"
+      },
+      "unclear": [
+        "구독 가격(11,900 추정, 위 note)",
+        "얼리버드 목표 인원(base·small '3명' — medium '1,000명')",
+        "김과장 제출 기한(base '어려울까지' — medium '다음 주 월요일')"
+      ]
+    },
+    "test_project_meeting_en.mp3": {
+      "language": "en",
+      "attendees": [
+        "Sarah",
+        "Mike",
+        "Jenny"
+      ],
+      "decisions": [
+        {
+          "key": "dark mode deferred",
+          "must": [
+            "dark mode"
+          ],
+          "note": "다음 주로 미루고 먼저 추정"
+        },
+        {
+          "key": "bug fix backend only",
+          "must": [
+            "backend"
+          ],
+          "note": "UI·스크린샷 변경 없음"
+        }
+      ],
+      "actions": [
+        {
+          "task": "payment bug fix",
+          "owner": "Mike",
+          "due": "tomorrow (afternoon)"
+        },
+        {
+          "task": "load testing",
+          "owner": "Mike",
+          "due": "Friday"
+        },
+        {
+          "task": "upload onboarding screens to Figma",
+          "owner": "Jenny",
+          "due": "today"
+        },
+        {
+          "task": "dark mode estimate & impact analysis",
+          "owner": "Jenny",
+          "due": "Monday"
+        },
+        {
+          "task": "final product screenshots to Sarah",
+          "owner": "미정(Sarah가 요청)",
+          "due": "Thursday"
+        },
+        {
+          "task": "email campaign start",
+          "owner": "Sarah",
+          "due": "next Monday"
+        }
+      ],
+      "numbers": [
+        "12%",
+        "10,000",
+        "30",
+        "two engineers"
+      ],
+      "next_meeting": "Friday 10am",
+      "stt_traps": {
+        "It fixes(T0029)": "Mike fixes",
+        "a be testing": "A/B testing"
+      },
+      "unclear": []
+    }
+  }
+}

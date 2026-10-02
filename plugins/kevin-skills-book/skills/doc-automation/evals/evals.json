@@ -1,0 +1,75 @@
+{
+  "skill_name": "doc-automation",
+  "note": "files 경로는 저장소 루트 기준. 실습 샘플은 kevin-skills-practice 플러그인에 있다. 객관 항목은 tools/grade_doc_runs.py가 자동 채점하고, [판단] 항목은 채점자가 슬라이드 텍스트를 읽고 판정한다.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "fx-pdf-manager-briefing",
+      "book_prompt": "2-3",
+      "prompt": "이 PDF를 분석해서 과장님께 보고 드려야 해. 과장님이 보고서를 볼 때 보는 주요 포인트는 1. 이번 주 달러/원 환율이 어느 방향으로 움직일 것 같은지 2. 우리 무역회사 입장에서 특히 신경 써야 할 리스크 요인이 뭔지, 이런 포인트들을 참고해서 PPT로 만들어줘.",
+      "files": ["plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/example/example_1_pdf-to-ppt/260316_FX_weekly(KOR).pdf"],
+      "expected_output": "과장 보고용 PPT. 달러/원 방향 전망과 무역회사 리스크가 헤드라인 수준에서 명시되고, 숫자는 모두 PDF에 근거한다.",
+      "expectations": [
+        "출력 폴더에 .pptx 보고서가 있다",
+        "슬라이드의 숫자(본문·표·차트)가 모두 원본 PDF에서 확인된다(출처 미확인 숫자 0개, 계산값은 선언된 경우만)",
+        "빈 플레이스홀더나 템플릿 안내 문구가 없다",
+        "슬라이드가 4장 이상 12장 이하다",
+        "[판단] 슬라이드 제목(헤드라인) 중 하나가 이번 주 달러/원 방향에 대한 답을 문장으로 말한다",
+        "[판단] 무역회사 입장의 리스크 요인을 다루는 슬라이드가 있다",
+        "[판단] 결론이 앞쪽(표지 다음 1~2장 안)에 있다"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "company-intro-from-docs",
+      "book_prompt": "2-5 이후 실습",
+      "prompt": "2장-기업PPT 폴더에 있는 회사 문서들과 팁스 공고문, 로고를 바탕으로 팁스 지원 심사용 회사 소개 발표자료를 만들어줘. 10장 이내로.",
+      "files": ["plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/example/example_3_comany-to-ppt"],
+      "input_folder_name": "2장-기업PPT",
+      "expected_output": "회사 문서 6개를 근거로 한 10장 이내 발표 PPT(로고 포함). 읽을 수 없는 배포용 공고 파일은 사용자에게 알린다.",
+      "expectations": [
+        "출력 폴더에 .pptx 보고서가 있다",
+        "슬라이드가 10장 이하다",
+        "슬라이드의 숫자(본문·표·차트)가 모두 회사 문서에서 확인된다(출처 미확인 숫자 0개, 계산값은 선언된 경우만)",
+        "빈 플레이스홀더나 템플릿 안내 문구가 없다",
+        "표지에 로고 이미지가 들어 있다",
+        "[판단] 최종 응답이 팁스 공고 파일(.hwpx)을 읽지 못했다는 사실을 사용자에게 알린다",
+        "[판단] 팀, 재무(또는 투자), 로드맵(또는 일정)을 다루는 슬라이드가 각각 있다"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "weekly-sales-with-exec-email",
+      "book_prompt": "2장 본문 주간 보고 실습",
+      "prompt": "weekly_sales.csv로 팀장님께 드릴 주간 매출 보고 PPT를 만들고, 임원께 보낼 보고 메일도 써줘.",
+      "files": ["plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/samples/weekly_sales.csv"],
+      "expected_output": "KPI·추이·분해가 있는 주간 보고 PPT와 결론 먼저 구조의 임원 보고 메일. 모든 숫자는 CSV에서 계산 가능하다.",
+      "expectations": [
+        "출력 폴더에 .pptx 보고서가 있다",
+        "출력 폴더에 임원 보고 메일 파일(.md 또는 .txt)이 있다",
+        "슬라이드의 숫자가 CSV 원본 또는 CSV에서 계산해 선언한 값으로 확인된다(출처 미확인 숫자 0개)",
+        "편집 가능한 네이티브 차트가 1개 이상 있다",
+        "[판단] 메일 첫 문단(또는 첫 섹션)이 결론을 말하고, 메일의 숫자가 PPT의 숫자와 일치한다",
+        "[판단] 슬라이드 헤드라인이 주제명이 아니라 주장 문장이다(절반 이상)"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "company-template-4x3",
+      "book_prompt": "2장 본문 회사 템플릿 실습",
+      "prompt": "회사 템플릿(template_4x3.pptx)을 적용해서 weekly_sales.csv 주간 매출 보고서를 만들어줘.",
+      "files": [
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/samples/weekly_sales.csv",
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/doc-automation/samples/template_4x3.pptx"
+      ],
+      "expected_output": "템플릿의 4:3 크기와 레이아웃·제목 칸을 따른 보고서. 템플릿 안내 문구나 빈 칸이 남지 않는다.",
+      "expectations": [
+        "출력 폴더에 .pptx 보고서가 있다",
+        "슬라이드 크기가 템플릿과 같은 4:3(10 x 7.5인치)이다",
+        "빈 플레이스홀더나 템플릿 안내 문구가 없다",
+        "내용 슬라이드의 제목이 템플릿의 제목 칸(placeholder)에 들어 있다(절반 이상)",
+        "슬라이드의 숫자가 CSV 원본 또는 선언된 계산값으로 확인된다(출처 미확인 숫자 0개)"
+      ]
+    }
+  ]
+}

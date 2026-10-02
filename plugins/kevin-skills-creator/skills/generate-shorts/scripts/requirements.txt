@@ -1,0 +1,5 @@
+# ffmpeg is installed separately (the doctor skill prints the OS-specific command). ASCII-only file.
+Pillow==12.3.0
+edge-tts==7.2.8
+# yt-dlp: minimum version only, it must track YouTube changes (see tools/pin-exceptions.json).
+yt-dlp>=2026.8.19

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "kevin-skills-book",
+  "displayName": "Claude Skills Book — 업무 자동화",
+  "version": "2.0.0-alpha.1",
+  "description": "문서·PPT 보고 자동화(doc-automation, 숫자 출처 검증), 한글 HWPX 양식 편집(hwpx-editor), 엑셀 정리·분석·취합(excel-automation), 회의록 정리(meeting-minutes), 데이터 수집·트렌드 리서치 보고서(data-collector). 사내 업무용 기본 플러그인.",
+  "author": {
+    "name": "humanist96",
+    "url": "https://github.com/humanist96"
+  },
+  "homepage": "https://github.com/humanist96/claude-skills",
+  "repository": "https://github.com/humanist96/claude-skills",
+  "keywords": [
+    "업무자동화",
+    "ppt",
+    "hwpx",
+    "excel",
+    "회의록",
+    "리서치",
+    "korean"
+  ]
+}

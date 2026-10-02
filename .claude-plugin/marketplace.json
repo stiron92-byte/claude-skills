@@ -1,29 +1,57 @@
 {
-  "name": "claude-skills",
+  "name": "kevin-claude-skills",
   "owner": {
-    "name": "daje0601",
-    "url": "https://github.com/stiron92-byte/claude-skills"
+    "name": "humanist96",
+    "url": "https://github.com/humanist96/claude-skills"
   },
+  "description": "책 『압도적 스킬로 바로 쓰는 클로드 코워크×AI 자동화』 업무 자동화 스킬 모음 — 업무(문서·PPT·HWPX·엑셀·회의록·리서치), 콘텐츠·영상, 실습 플러그인",
   "metadata": {
-    "description": "책 『Claude Code Skills』에서 다루는 업무 자동화 스킬 모음 — 문서·PPT, 엑셀, 회의록, 콘텐츠 리서치/리퍼포징, 쇼츠·나레이션 영상 자동화",
-    "version": "1.6.1"
+    "version": "2.0.0-alpha.1"
   },
   "plugins": [
     {
-      "name": "claude-skills-book",
-      "version": "1.6.1",
-      "description": "8개 업무 자동화 스킬 모음: 문서·PPT 자동화(doc-automation), 엑셀 자동화(excel-automation), 회의록 정리(meeting-minutes), 콘텐츠 리서치(content-research), 데이터 수집·리서치(data-collector), 콘텐츠 리퍼포징(content-repurpose), 유튜브 쇼츠 생성(generate-shorts), 나레이션 영상 생성(narration-video). 설치 후 자연어로 자동 트리거됩니다.",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./skills/doc-automation",
-        "./skills/excel-automation",
-        "./skills/meeting-minutes",
-        "./skills/content-research",
-        "./skills/data-collector",
-        "./skills/content-repurpose",
-        "./skills/generate-shorts",
-        "./skills/narration-video"
+      "name": "kevin-skills-book",
+      "source": "./plugins/kevin-skills-book",
+      "description": "문서·PPT 보고 자동화(doc-automation, 숫자 출처 검증), 한글 HWPX 양식 편집(hwpx-editor), 엑셀 정리·분석·취합(excel-automation), 회의록 정리(meeting-minutes), 데이터 수집·트렌드 리서치 보고서(data-collector). 사내 업무용 기본 플러그인.",
+      "version": "2.0.0-alpha.1",
+      "category": "productivity",
+      "tags": [
+        "업무자동화",
+        "ppt",
+        "hwpx",
+        "excel",
+        "회의록",
+        "리서치",
+        "korean"
+      ]
+    },
+    {
+      "name": "kevin-skills-creator",
+      "source": "./plugins/kevin-skills-creator",
+      "description": "콘텐츠 리서치(content-research), 플랫폼별 리퍼포징(content-repurpose), 유튜브 쇼츠·카드뉴스(generate-shorts), 나레이션 영상(narration-video). 마케팅·홍보용 선택 플러그인.",
+      "version": "2.0.0-alpha.1",
+      "category": "content",
+      "tags": [
+        "콘텐츠",
+        "마케팅",
+        "쇼츠",
+        "카드뉴스",
+        "영상",
+        "korean"
+      ]
+    },
+    {
+      "name": "kevin-skills-practice",
+      "source": "./plugins/kevin-skills-practice",
+      "description": "책·강의 실습 샘플 파일을 작업 폴더로 복사(practice-samples)하고, 스킬 사용 전 PC 준비 상태를 점검(doctor)한다. 강의 수강생용.",
+      "version": "2.0.0-alpha.1",
+      "category": "productivity",
+      "tags": [
+        "실습",
+        "강의",
+        "샘플",
+        "환경점검",
+        "korean"
       ]
     }
   ]

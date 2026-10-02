@@ -27,3 +27,17 @@ node_modules/
 chapter05-skill-customization/marketingskills/
 
 .bkit-memory.json
+# bkit PDCA tool state (local only)
+docs/.pdca-snapshots/
+docs/.pdca-status.json
+docs/.bkit-memory.json
+
+# Local work area: baseline snapshots, pin-check venv, docx backups
+.workspace/
+
+# claude plugin eval results
+plugins/*/evals/results/
+
+# unlazy gate tool state
+.unlazy/
+.unlazy-hook-state.json

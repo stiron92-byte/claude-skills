@@ -1,0 +1,14 @@
+# Line endings: normalize text to LF in the repository.
+* text=auto
+# Shell scripts must stay LF even on Windows checkouts, or bash fails with "$'\r': command not found".
+*.sh text eol=lf
+# Binary samples: never convert.
+*.pptx binary
+*.potx binary
+*.docx binary
+*.xlsx binary
+*.hwpx binary
+*.pdf binary
+*.mp3 binary
+*.png binary
+*.ttf binary

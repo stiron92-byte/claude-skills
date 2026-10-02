@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "kevin-skills-practice",
+  "displayName": "Claude Skills Book — 실습",
+  "version": "2.0.0-alpha.1",
+  "description": "책·강의 실습 샘플 파일을 작업 폴더로 복사(practice-samples)하고, 스킬 사용 전 PC 준비 상태를 점검(doctor)한다. 강의 수강생용.",
+  "author": {
+    "name": "humanist96",
+    "url": "https://github.com/humanist96"
+  },
+  "homepage": "https://github.com/humanist96/claude-skills",
+  "repository": "https://github.com/humanist96/claude-skills",
+  "keywords": [
+    "실습",
+    "강의",
+    "샘플",
+    "환경점검",
+    "korean"
+  ]
+}

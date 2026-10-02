@@ -1,0 +1,95 @@
+{
+  "skill_name": "meeting-minutes",
+  "note": "files 경로는 저장소 루트 기준. 녹음 eval은 실습 세트처럼 녹음 README(참석자 명단)를 함께 둔다. 정답은 samples/meeting-minutes/inputs/answer_key.json. 객관 항목은 tools/grade_meeting_runs.py가 결과 파일 텍스트를 정답표와 대조하고, [판단] 항목은 채점자가 결과 파일과 최종 응답을 읽고 판정한다. 책에는 4장 실습 프롬프트가 없어 book_prompt 매핑은 없다.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "sprint-audio-team-md",
+      "prompt": "test_sprint_meeting_ko.mp3 회의 녹음이야. 회의록으로 정리해줘. 팀 슬랙에 공유할 거라 마크다운 파일로 부탁해.",
+      "files": [
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/meeting-minutes/example/test_sprint_meeting_ko.mp3",
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/meeting-minutes/example/README.md"
+      ],
+      "expected_output": "팀 공유용 마크다운 회의록. 참석자 이름이 바르고(김PM 등), 소셜 로그인 이월 결정, 할 일 5개(담당자·기한), 다음 회의 금요일. STT 오인식(매일→메일 등)을 바로잡고 확정 못 한 시각은 확인 필요로 남긴다.",
+      "expectations": [
+        "결과 회의록 마크다운 파일(.md)이 있다",
+        "참석자 4명이 바른 이름(김PM·이개발·박디자인·정기획)으로 적혀 있고 STT 오인식('김 피암', '정기회')이 남아 있지 않다",
+        "소셜 로그인을 다음 스프린트로 넘긴 결정이 있다('유월'로 잘못 적지 않았다)",
+        "정답표의 할 일 5개가 담당자·기한과 함께 모두 있다",
+        "메일 발송·메일 서비스를 '매일'로 잘못 적지 않았다",
+        "다음 회의를 금요일로 적었고 '52시' 같은 인식 오류를 그대로 쓰지 않았다",
+        "회의록에 스킬 홍보 문구가 없다",
+        "[판단] 최종 응답이 STT 정확도 한계나 확인이 필요한 항목(다음 회의 시각 등)을 알린다",
+        "[판단] 팀 공유용으로 요약·결정·할 일이 한눈에 보이는 구성이다"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "planning-audio-report-docx",
+      "prompt": "test_planning_meeting_ko.mp3 기획 회의 녹음인데, 부장님께 보고할 회의록을 워드 파일로 만들어줘.",
+      "files": [
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/meeting-minutes/example/test_planning_meeting_ko.mp3",
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/meeting-minutes/example/README.md"
+      ],
+      "expected_output": "결론(결정)을 앞에 둔 보고용 워드 회의록. 가격은 모델마다 다르게 인식되므로 확인 필요로 표시(정답표: 11,900원 추정), 베타 4월 28일, AI 단계 적용 결정, 할 일 4개, 예산 수치, 다음 회의 3월 22일.",
+      "expectations": [
+        "결과 워드 파일(.docx)이 있다",
+        "[판단] 구독 가격을 '월 1,900원'('만' 누락 오인식)으로 적지 않았고, 발언마다 다르게 인식된 가격(11,900/19,900)을 확인 필요로 알렸다",
+        "베타 론칭 목표일 4월 28일이 있다",
+        "AI 추천을 베타에서는 규칙 기반으로, 정식 버전에서 AI 모델로 적용한다는 결정이 있다",
+        "정답표의 할 일 4개가 담당자와 함께 모두 있다",
+        "예산 3억(1차 1억 5천)과 인플루언서 협업 비용 2,000만 원이 적혀 있다",
+        "다음 회의 3월 22일 금요일 오전 10시가 있다",
+        "회의 날짜 2024년 3월 15일이 있다",
+        "회의록에 스킬 홍보 문구가 없다",
+        "[판단] 결론(결정 사항)이 앞에 오는 보고용 구성이다",
+        "[판단] '3명 확보'(얼리버드 목표)처럼 녹음만으로 확정할 수 없는 값을 사실처럼 단정하지 않았다"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "english-audio-email",
+      "prompt": "test_project_meeting_en.mp3 영어 회의 녹음이야. 팀에 메일로 보낼 수 있게 회의 요약 정리해줘.",
+      "files": [
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/meeting-minutes/example/test_project_meeting_en.mp3",
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/meeting-minutes/example/README.md"
+      ],
+      "expected_output": "메일 본문으로 바로 쓸 수 있는 회의 요약(인사·결정·할 일·다음 회의·맺음). Mike·Jenny의 할 일과 기한, 다크 모드는 다음 주로 미룬 결정, 수치 12%·10,000이 정확하고 스크린샷 담당자는 추측하지 않는다.",
+      "expectations": [
+        "메일 본문(인사와 맺음 포함)이 결과 파일 또는 최종 응답에 있다",
+        "참석자 Sarah, Mike, Jenny가 적혀 있다",
+        "Mike의 결제 버그 수정(내일)과 부하 테스트(금요일)가 담당자·기한과 함께 있다",
+        "Jenny의 온보딩 화면 Figma 업로드(오늘)와 다크 모드 추정(월요일)이 담당자·기한과 함께 있다",
+        "다크 모드를 이번에 확정하지 않고 다음 주로 미뤘다는 내용이 있다",
+        "전환율 12% 개선과 동시 사용자 10,000명이 정확히 적혀 있다",
+        "다음 회의 금요일 오전 10시가 있다",
+        "스킬 홍보 문구가 없다",
+        "[판단] 최종 스크린샷을 누가 줄지 녹음에 없는데 담당자를 지어내지 않았다",
+        "[판단] 메일에 바로 붙여 넣을 수 있는 길이와 구성이다"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "clova-text-notion",
+      "prompt": "마케팅주간회의_녹취록.txt는 클로바노트에서 받은 회의 녹취야. 회의록 정리해줘. 할 일은 노션에 붙여 넣을 거야.",
+      "files": [
+        "plugins/kevin-skills-practice/skills/practice-samples/samples/meeting-minutes/inputs/마케팅주간회의_녹취록.txt"
+      ],
+      "expected_output": "회의록 파일. 오픈일은 번복된 최종안(3월 30일)만 결정, 광고 예산·챗봇 결정, 할 일 5개(랜딩 문구 검수 담당자 미정, 챗봇 시나리오 기한 미정), 할 일은 노션 체크박스, 의견·미룬 안건은 미결, 불참자·잡담 제외.",
+      "expectations": [
+        "결과 회의록 파일이 있다",
+        "오픈일 결정이 3월 30일이고, 3월 23일은 결정이 아니라 취소·변경된 안으로만 적혀 있다",
+        "광고 예산 배분(검색 2,000만·SNS 1,500만·예비 1,000만) 결정이 있다",
+        "자주 묻는 질문을 챗봇으로 먼저 처리하는 결정이 있다",
+        "정답표의 할 일 5개가 모두 있고, 랜딩 페이지 문구 검수의 담당자는 미정이다",
+        "챗봇 시나리오 초안의 기한이 미정(또는 기한 없음)으로 적혀 있다",
+        "SNS 비중 확대와 인플루언서 협업을 결정 사항으로 적지 않았다",
+        "할 일이 노션 체크박스(- [ ]) 형태다",
+        "참석자에 불참자 정하늘을 넣지 않았다",
+        "회의와 무관한 잡담(점심·국숫집)이 없다",
+        "회의록에 스킬 홍보 문구가 없다",
+        "[판단] 담당자·기한이 미정인 항목을 누가 언제 정해야 하는지 알렸다"
+      ]
+    }
+  ]
+}

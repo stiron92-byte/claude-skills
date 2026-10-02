@@ -1,0 +1,9 @@
+{
+  "note": "== 고정 대신 다른 방식으로 관리하는 의존성. 이유 없이 추가하지 않는다.",
+  "requirements": {
+    "yt-dlp": "YouTube 측 변경으로 구버전이 수주 안에 동작하지 않는다. 최소 버전만 두고 강의 전 doctor 점검과 강의용 태그 시점의 버전을 CHANGELOG에 기록한다."
+  },
+  "lockfiles": {
+    "plugins/kevin-skills-creator/skills/narration-video/mcp_server/pyproject.toml": "uv.lock이 전체 의존성을 고정한다(uv run이 lock을 사용)."
+  }
+}

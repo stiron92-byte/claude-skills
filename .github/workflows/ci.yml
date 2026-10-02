@@ -1,0 +1,158 @@
+name: ci
+
+on:
+  push:
+    branches: [main, v2]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_evals:
+        description: "Run claude plugin eval smoke cases (needs ANTHROPIC_API_KEY secret and eval access)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: static checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # check_migration / make_baseline compare against the v1.6.1 tag
+      - run: git fetch --tags --force
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned doc-automation dependencies (used by Phase 1 checks)
+        run: python -m pip install -r plugins/kevin-skills-book/skills/doc-automation/scripts/requirements.txt -c constraints.txt
+      - name: Skill conventions (new violations only)
+        run: python tools/validate_skills.py --baseline tools/validate-baseline.json
+      - name: Validator positive control
+        run: python tests/control_validator_detects.py
+      - name: Vendored shared modules in sync
+        run: python tools/build.py --check
+      - name: Byte-compile
+        run: python tools/compile_all.py
+      - name: Unit tests
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Eval case structure
+        run: python tools/check_evals.py
+      - name: Dependency pins (static)
+        run: python tools/check_pins.py
+      - name: Plugin sizes
+        run: python tools/check_sizes.py
+      - name: Migration from v1.6.1
+        run: python tools/check_migration.py
+      - name: Baseline snapshot
+        run: python tools/make_baseline.py --verify
+      - name: Slimmed docx integrity
+        run: python tools/check_docx_slim.py
+      - name: Docs and templates
+        run: python tools/check_docs.py
+      - name: Original-owner traces
+        run: python tools/check_traces.py
+      - name: Doctor runs
+        run: python tools/check_doctor.py
+      # Phase 1 — 스킬별 고도화 검증
+      - name: "doc-automation: source extraction"
+        run: python tests/check_extract_sources.py
+      - name: "doc-automation: deck rendering"
+        run: python tests/check_build_deck.py
+      - name: "doc-automation: number provenance controls"
+        run: python tests/check_verify_deck.py
+      - name: "hwpx-editor: form-preserving edits"
+        run: python tests/check_hwpx_editor.py
+      - name: "excel-automation: practice inputs and answer key"
+        run: python tests/check_excel_practice_inputs.py
+      - name: "excel-automation: cleaning engine vs answer key"
+        run: python tests/check_excel_clean.py
+      # CI 러너에는 Excel·LibreOffice가 없어 수식 구조만 검사한다(값 대조는 로컬 게이트 E3·E4)
+      - name: "excel-automation: consolidation (structure only)"
+        run: python tests/check_excel_consolidate.py --allow-no-engine
+      - name: "excel-automation: verifier controls"
+        run: python tests/check_verify_excel.py --allow-no-engine
+      - name: "meeting-minutes: practice transcript and answer key"
+        run: python tests/check_meeting_practice.py
+      - name: "meeting-minutes: transcript normalization"
+        run: python tests/check_prepare_transcript.py
+      - name: "meeting-minutes: rendering"
+        run: python tests/check_build_minutes.py
+      - name: "meeting-minutes: verifier controls"
+        run: python tests/check_verify_minutes.py
+      # static job에는 faster-whisper가 없다(음성 변환은 로컬 게이트 M2에서 검증)
+      - name: "meeting-minutes: transcription (skipped without faster-whisper)"
+        run: python tests/check_transcribe.py --allow-missing
+      - name: "content-repurpose: practice source and answer key"
+        run: python tests/check_repurpose_practice.py
+      - name: "content-repurpose: character counting"
+        run: python tests/check_count_chars.py
+      - name: "content-repurpose: verifier controls"
+        run: python tests/check_repurpose_verify.py
+      - name: "content-repurpose: audit inventory"
+        run: python tests/check_content_inventory.py
+      - name: Phase 1 skill quality
+        run: python tools/check_skill_quality.py doc-automation hwpx-editor excel-automation meeting-minutes content-repurpose
+      - name: Phase 1 skill-creator eval sets
+        run: python tools/check_skillcreator_evals.py doc-automation hwpx-editor excel-automation meeting-minutes content-repurpose
+
+  plugin-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install -g @anthropic-ai/claude-code
+      - name: claude plugin validate --strict (marketplace, plugins, skills)
+        run: python tools/run_plugin_validate.py
+
+  pins-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Clean-venv install of all pinned requirements with constraints
+        run: python tools/check_pins.py --install
+
+  evals:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_evals
+    needs: [static, plugin-validate]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: [kevin-skills-book, kevin-skills-creator, kevin-skills-practice]
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install -g @anthropic-ai/claude-code
+      - name: Smoke evals
+        run: >
+          claude plugin eval plugins/${{ matrix.plugin }}
+          --tag smoke --threshold 0.8 --max-cost-usd 20 --no-publish
+          --allow-tools Bash Write Edit
+          --json eval-${{ matrix.plugin }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-${{ matrix.plugin }}
+          path: eval-${{ matrix.plugin }}.json
+          retention-days: 30

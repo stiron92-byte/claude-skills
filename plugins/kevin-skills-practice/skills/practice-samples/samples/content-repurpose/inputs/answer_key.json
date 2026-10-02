@@ -1,0 +1,108 @@
+{
+  "generated_by": "tools/dev/make_repurpose_practice.py",
+  "repurpose": {
+    "source": "원본_유튜브대본_뉴스레터1000명.md",
+    "title": "퇴근 후 1시간으로 뉴스레터 구독자 1,000명 모은 방법",
+    "core_messages": [
+      {
+        "key": "주제를 좁힌다",
+        "any": [
+          "좁",
+          "함수 하나"
+        ]
+      },
+      {
+        "key": "발행 요일·시간 고정",
+        "any": [
+          "화요일",
+          "고정"
+        ]
+      },
+      {
+        "key": "독자 질문을 다음 주제로",
+        "any": [
+          "질문",
+          "답장"
+        ]
+      }
+    ],
+    "numbers": [
+      "1,000명",
+      "2025년 1월",
+      "3개월",
+      "87명",
+      "6개월",
+      "48%",
+      "31%",
+      "화요일 오전 7시",
+      "12%",
+      "40분",
+      "20분",
+      "1시간",
+      "2건"
+    ],
+    "must_not": [
+      "유료화 수익을 냈다는 주장",
+      "누구나·반드시 1,000명을 모을 수 있다는 보장",
+      "원본에 없는 수치(매출, 구독자 증가율 등)"
+    ],
+    "caveats": [
+      "아직 유료화하지 않음(광고 제안 2건 거절)",
+      "제 경우이고 분야마다 다를 수 있음"
+    ],
+    "cta": "다음 영상: 첫 호 쓰는 법·제목 짓는 법"
+  },
+  "audit_8_1": {
+    "items": 10,
+    "categories": {
+      "AI 도구": 5,
+      "AI 활용": 1,
+      "커리어": 1,
+      "AI 뉴스": 1,
+      "AI 전망": 1,
+      "AI 개념": 1
+    },
+    "top_category": "AI 도구",
+    "top_share": 0.5,
+    "date_range": [
+      "2024-06",
+      "2025-04"
+    ],
+    "older_than_6_months_as_of_2026_10": 10,
+    "overlap_groups_by_words": [
+      [
+        "ChatGPT vs Claude 비교",
+        "Claude 3.5 Sonnet 리뷰",
+        "AI 코딩 도구 비교"
+      ]
+    ],
+    "overlap_note": "제목 단어로 묶이는 것은 위 3개. 'Cursor IDE 사용법'도 AI 코딩 도구 계열이라 함께 묶을지는 판단 영역",
+    "time_sensitive": [
+      "GPT-4o 업데이트 정리",
+      "Claude 3.5 Sonnet 리뷰",
+      "2025 AI 트렌드 예측"
+    ],
+    "months_since_last_as_of_2026_10": 18,
+    "channels": [
+      "블로그",
+      "유튜브"
+    ],
+    "note": "목록에 조회수·성과 데이터가 없다. 성과 수치를 지어내면 안 된다. 2025-04 이후 발행이 없다(약 18개월 공백)."
+  },
+  "gap_8_2": {
+    "mine_partial": true,
+    "competitor_partial": true,
+    "topic_gaps": [
+      "AI 실전 활용(부동산 투자 분석 등 도메인 적용)",
+      "비개발자 자동화 워크플로",
+      "뉴스레터 자동 발행(실습형)"
+    ],
+    "overlap": [
+      "AI 도구 비교(경쟁: Claude Code vs Devin vs Cursor, 내 쪽: ChatGPT vs Claude, Cursor IDE)"
+    ],
+    "format_gaps": [
+      "실습형·튜토리얼 형식"
+    ],
+    "note": "두 목록 모두 '(생략)'이 있어 일부만 주어졌다. 분석이 일부 목록 기준임을 밝혀야 한다. 검색량 등 수치를 사실처럼 지어내면 안 된다."
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {"query": "첨부한 260316_FX_weekly.pdf 분석해서 과장님한테 보고할 ppt 좀 만들어줘. 이번주 환율 방향이랑 우리 수입 결제 리스크 위주로", "should_trigger": true},
+  {"query": "우리 회사 소개 자료 폴더(사업개요.docx, 재무현황.docx, 팀소개.docx)랑 로고로 투자사 미팅용 발표자료 10장 이내로 만들어줘", "should_trigger": true},
+  {"query": "sales_0921.csv 주간 매출 데이터로 팀장님 보고용 ppt 만들고 본부장님께 보낼 요약 메일도 써줘", "should_trigger": true},
+  {"query": "회사 표준 템플릿(brand_4x3.pptx) 적용해서 3분기 실적 보고서 ppt로 정리해줘. 데이터는 q3_results.xlsx", "should_trigger": true},
+  {"query": "https://www.google.com/finance/quote/005930:KRX 이 페이지 최신 자료로 팀장님께 드릴 삼성전자 동향 보고 PPT 5장 이내로 만들어줘", "should_trigger": true},
+  {"query": "이 한글파일(2026_사업계획.hwpx) 내용을 임원 보고용 PPT로 바꿔줄래?", "should_trigger": true},
+  {"query": "회의록.docx랑 고객 요구사항.pdf 합쳐서 내일 고객사 미팅용 제안 발표자료 만들어줘", "should_trigger": true},
+  {"query": "월간 마케팅 성과 엑셀(marketing_sep.xlsx) 보고 대표님 보고용 슬라이드 몇 장 만들어줘. 숫자 틀리면 안 돼", "should_trigger": true},
+  {"query": "이 연구 보고서 pdf 핵심만 뽑아서 팀 공유용 ppt랑 팀원들한테 보낼 메일 초안까지 부탁해", "should_trigger": true},
+  {"query": "지난주 고객 문의 통계 csv로 cs팀 주간 보고 장표 만들어줘", "should_trigger": true},
+  {"query": "이 결재문서 hwpx 양식은 그대로 두고 담당자랑 날짜만 바꿔줘", "should_trigger": false},
+  {"query": "customers.xlsx 전화번호 형식 통일하고 중복 행 지워서 새 엑셀로 저장해줘", "should_trigger": false},
+  {"query": "sales.xlsx 시트 3개를 상품코드 기준으로 하나로 합쳐서 통합 시트 만들어줘", "should_trigger": false},
+  {"query": "회의 녹음 파일(meeting_0930.m4a) 회의록으로 정리해줘. 액션 아이템 위주로", "should_trigger": false},
+  {"query": "요즘 2차전지 시장 트렌드 리서치해서 보고서 써줘", "should_trigger": false},
+  {"query": "이 블로그 글을 링크드인 게시물이랑 X 스레드로 바꿔줘", "should_trigger": false},
+  {"query": "우리 회사 브랜드 컬러로 빈 PPT 마스터 템플릿만 하나 만들어줘. 내용은 필요 없어", "should_trigger": false},
+  {"query": "이 PDF 영어 논문을 한국어로 번역해서 docx로 저장해줘", "should_trigger": false},
+  {"query": "report.pptx 5번 슬라이드 오타만 고쳐줘. '매츨'을 '매출'로", "should_trigger": false},
+  {"query": "python-pptx로 슬라이드에 표 넣는 코드 예시 좀 보여줘", "should_trigger": false}
+]

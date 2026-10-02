@@ -1,0 +1,5 @@
+# Pinned 2026-10-01. Keep this file ASCII-only (pip uses the OS locale encoding).
+feedparser==6.0.14
+requests==2.34.2
+pyyaml==6.0.3
+python-dotenv==1.2.4
